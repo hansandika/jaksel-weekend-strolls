@@ -26,12 +26,22 @@ async function adminFetch<T>(
 ): Promise<T> {
   const { search, timeoutMs, ...requestInit } = init ?? {};
   const url = `${FUNCTIONS_URL}/${fn}${search ?? ""}`;
-  const response = await fetch(url, {
-    ...requestInit,
-    headers: { ...adminHeaders(), ...requestInit.headers },
-    cache: "no-store",
-    signal: requestInit.signal ?? (timeoutMs ? AbortSignal.timeout(timeoutMs) : undefined),
-  });
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...requestInit,
+      headers: { ...adminHeaders(), ...requestInit.headers },
+      cache: "no-store",
+      signal: requestInit.signal ?? (timeoutMs ? AbortSignal.timeout(timeoutMs) : undefined),
+    });
+  } catch (error) {
+    const timedOut =
+      error instanceof Error &&
+      (error.name === "TimeoutError" || error.name === "AbortError");
+    throw new Error(
+      timedOut ? `Edge ${fn} timed out` : error instanceof Error ? error.message : `Edge ${fn} failed`,
+    );
+  }
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
     const message =

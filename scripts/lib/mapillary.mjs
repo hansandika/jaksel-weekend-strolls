@@ -23,10 +23,15 @@ export async function nearestMapillaryImages(
     radius: String(radius),
     limit: String(limit),
   });
-  const response = await fetch(`${GRAPH}/images?${params}`, {
-    headers: { Authorization: `OAuth ${token}` },
-    signal: AbortSignal.timeout(8000),
-  });
+  let response;
+  try {
+    response = await fetch(`${GRAPH}/images?${params}`, {
+      headers: { Authorization: `OAuth ${token}` },
+      signal: AbortSignal.timeout(8000),
+    });
+  } catch {
+    return [];
+  }
   if (!response.ok) {
     if (response.status === 429 && attempt < 1) {
       await sleep(1500);
@@ -49,10 +54,15 @@ export async function mapillaryThumbUrl(imageId, size = 1024) {
   const token = mapillaryToken();
   if (!token) return null;
   const field = size <= 256 ? "thumb_256_url" : "thumb_1024_url";
-  const response = await fetch(`${GRAPH}/${imageId}?fields=${field}`, {
-    headers: { Authorization: `OAuth ${token}` },
-    signal: AbortSignal.timeout(8000),
-  });
+  let response;
+  try {
+    response = await fetch(`${GRAPH}/${imageId}?fields=${field}`, {
+      headers: { Authorization: `OAuth ${token}` },
+      signal: AbortSignal.timeout(8000),
+    });
+  } catch {
+    return null;
+  }
   if (!response.ok) return null;
   const payload = await response.json();
   return typeof payload[field] === "string" ? payload[field] : null;

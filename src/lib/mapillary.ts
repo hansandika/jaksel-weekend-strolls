@@ -31,23 +31,31 @@ export async function nearestMapillary(
     radius: "50",
     limit: "3",
   });
-  const response = await fetch(`${GRAPH}/images?${params}`, {
-    headers: { Authorization: `OAuth ${token}` },
-    cache: "no-store",
-    signal: AbortSignal.timeout(LOOKUP_TIMEOUT_MS),
-  });
-  if (response.status === 429) return null;
-  if (!response.ok) return null;
-  const payload = (await response.json()) as {
-    data?: Array<{ id?: string; captured_at?: string | number; compass_angle?: number }>;
-  };
-  const first = payload.data?.[0];
-  if (!first?.id) return null;
-  return {
-    image_id: String(first.id),
-    captured_at: first.captured_at,
-    compass_angle: first.compass_angle,
-  };
+  try {
+    const response = await fetch(`${GRAPH}/images?${params}`, {
+      headers: { Authorization: `OAuth ${token}` },
+      cache: "no-store",
+      signal: AbortSignal.timeout(LOOKUP_TIMEOUT_MS),
+    });
+    if (response.status === 429) return null;
+    if (!response.ok) return null;
+    const payload = (await response.json()) as {
+      data?: Array<{
+        id?: string;
+        captured_at?: string | number;
+        compass_angle?: number;
+      }>;
+    };
+    const first = payload.data?.[0];
+    if (!first?.id) return null;
+    return {
+      image_id: String(first.id),
+      captured_at: first.captured_at,
+      compass_angle: first.compass_angle,
+    };
+  } catch {
+    return null;
+  }
 }
 
 export function mapillaryPhotoPath(imageId: string): string {

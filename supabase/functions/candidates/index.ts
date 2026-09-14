@@ -367,25 +367,29 @@ async function nearestMapillary(
     radius: "50",
     limit: "3",
   });
-  const response = await fetch(`https://graph.mapillary.com/images?${params}`, {
-    headers: { Authorization: `OAuth ${token}` },
-    signal: AbortSignal.timeout(8000),
-  });
-  if (!response.ok) return null;
-  const payload = await response.json() as {
-    data?: Array<{
-      id?: string;
-      captured_at?: string | number;
-      compass_angle?: number;
-    }>;
-  };
-  const first = payload.data?.[0];
-  if (!first?.id) return null;
-  return {
-    image_id: first.id,
-    captured_at: first.captured_at,
-    compass_angle: first.compass_angle,
-  };
+  try {
+    const response = await fetch(`https://graph.mapillary.com/images?${params}`, {
+      headers: { Authorization: `OAuth ${token}` },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!response.ok) return null;
+    const payload = await response.json() as {
+      data?: Array<{
+        id?: string;
+        captured_at?: string | number;
+        compass_angle?: number;
+      }>;
+    };
+    const first = payload.data?.[0];
+    if (!first?.id) return null;
+    return {
+      image_id: first.id,
+      captured_at: first.captured_at,
+      compass_angle: first.compass_angle,
+    };
+  } catch {
+    return null;
+  }
 }
 
 function sleep(ms: number): Promise<void> {

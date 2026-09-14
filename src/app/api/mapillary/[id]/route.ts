@@ -18,15 +18,20 @@ export async function GET(
     return NextResponse.json({ error: "mapillary unset" }, { status: 404 });
   }
 
-  const meta = await fetch(
-    `https://graph.mapillary.com/${id}?fields=thumb_1024_url`,
-    {
-      headers: { Authorization: `OAuth ${token}` },
-      cache: "force-cache",
-      next: { revalidate: 86400 },
-      signal: AbortSignal.timeout(8000),
-    },
-  );
+  let meta: Response;
+  try {
+    meta = await fetch(
+      `https://graph.mapillary.com/${id}?fields=thumb_1024_url`,
+      {
+        headers: { Authorization: `OAuth ${token}` },
+        cache: "force-cache",
+        next: { revalidate: 86400 },
+        signal: AbortSignal.timeout(8000),
+      },
+    );
+  } catch {
+    return NextResponse.json({ error: "mapillary timeout" }, { status: 504 });
+  }
   if (!meta.ok) {
     return NextResponse.json({ error: "image not found" }, { status: meta.status });
   }
@@ -36,10 +41,15 @@ export async function GET(
     return NextResponse.json({ error: "no thumbnail" }, { status: 404 });
   }
 
-  const image = await fetch(thumb, {
-    cache: "force-cache",
-    signal: AbortSignal.timeout(8000),
-  });
+  let image: Response;
+  try {
+    image = await fetch(thumb, {
+      cache: "force-cache",
+      signal: AbortSignal.timeout(8000),
+    });
+  } catch {
+    return NextResponse.json({ error: "thumb timeout" }, { status: 504 });
+  }
   if (!image.ok || !image.body) {
     return NextResponse.json({ error: "thumb fetch failed" }, { status: 502 });
   }
