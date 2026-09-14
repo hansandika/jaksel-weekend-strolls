@@ -1,0 +1,80 @@
+"use client";
+
+import { useFormStatus } from "react-dom";
+import { startDiscovery } from "@/app/admin/actions";
+import {
+  DISCOVERY_AREAS,
+  DISCOVERY_PLACE_TYPES,
+} from "@/lib/discovery-areas";
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="flex h-11 w-full items-center justify-center rounded-[12px] bg-coral text-[15px] font-semibold text-ink disabled:opacity-60"
+    >
+      {pending ? "Querying OpenStreetMap…" : "Run OSM discovery"}
+    </button>
+  );
+}
+
+export function DiscoverForm() {
+  return (
+    <form action={startDiscovery} className="mt-5 space-y-5">
+      <fieldset>
+        <legend className="text-[13px] font-semibold text-cream">Areas</legend>
+        <div className="mt-2 space-y-2">
+          {DISCOVERY_AREAS.map((area) => (
+            <label
+              key={area.key}
+              className="flex items-center gap-3 rounded-[14px] bg-card px-3.5 py-3 text-[14px] text-cream"
+            >
+              <input
+                type="checkbox"
+                name="areas"
+                value={area.key}
+                defaultChecked={area.defaultOn}
+                className="h-[18px] w-[18px] accent-[#ff5a3c]"
+              />
+              <span className="flex-1">{area.label}</span>
+              {area.outOfJaksel ? (
+                <span className="text-[11px] text-coral">out of Jaksel</span>
+              ) : null}
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend className="text-[13px] font-semibold text-cream">
+          Place types
+        </legend>
+        <div className="mt-2 space-y-2">
+          {DISCOVERY_PLACE_TYPES.map((type) => (
+            <label
+              key={type.key}
+              className="flex items-center gap-3 rounded-[14px] bg-card px-3.5 py-3 text-[14px] text-cream"
+            >
+              <input
+                type="checkbox"
+                name="place_types"
+                value={type.key}
+                defaultChecked
+                className="h-[18px] w-[18px] accent-[#ff5a3c]"
+              />
+              {type.label}
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      <p className="text-[12px] leading-relaxed text-cream/45">
+        Dedupes on OSM type/id. Existing approved/rejected rows are left alone.
+        No TikTok scrape and no auto-publish to the weekend pack.
+      </p>
+      <SubmitButton />
+    </form>
+  );
+}

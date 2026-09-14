@@ -1,0 +1,7 @@
+project_id = "cnjsugxtinobryxmqcmd"
+
+[functions.discover]
+verify_jwt = false
+
+[functions.candidates]
+verify_jwt = false
