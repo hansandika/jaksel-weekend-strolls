@@ -158,9 +158,11 @@ async function importGeofabrik() {
   const rl = createInterface({ input: createReadStream(geojsonseq) });
   for await (const line of rl) {
     if (!line.trim()) continue;
+    const cleaned = line.replace(/^\u001e/, "").trim();
+    if (!cleaned) continue;
     let feature;
     try {
-      feature = JSON.parse(line);
+      feature = JSON.parse(cleaned);
     } catch {
       continue;
     }
