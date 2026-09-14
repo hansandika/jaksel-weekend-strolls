@@ -143,7 +143,12 @@ export async function startDiscovery(formData: FormData) {
 
 export async function enrichPhotos() {
   await requireSession();
-  const nextHasToken = mapillaryConfigured();
+  if (!mapillaryConfigured()) {
+    redirect(
+      "/admin/discover?error=" + encodeURIComponent(MAPILLARY_TOKEN_MISSING),
+    );
+  }
+
   let edge: Awaited<ReturnType<typeof fetchCandidatePhotos>> | undefined;
   try {
     edge = await fetchCandidatePhotos(40);
@@ -156,12 +161,6 @@ export async function enrichPhotos() {
     revalidatePath("/admin/discover");
     redirect(
       `/admin/discover?photos=1&updated=${edge.updated}&looked=${edge.looked ?? edge.updated}`,
-    );
-  }
-
-  if (!nextHasToken) {
-    redirect(
-      "/admin/discover?error=" + encodeURIComponent(MAPILLARY_TOKEN_MISSING),
     );
   }
 
