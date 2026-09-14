@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-ink: #1a1614;
+  --color-cream: #faf7f2;
+  --color-coral: #ff5a3c;
+  --color-card: #26211e;
+  --color-event: #4a2c26;
+  --color-chip: #322c28;
+  --color-muted: #c4b8ae;
+  --color-soft: rgba(250, 247, 242, 0.62);
+  --color-faint: rgba(250, 247, 242, 0.38);
+  --font-sans: var(--font-plus-jakarta);
+}
+
+html,
+body {
+  background: var(--color-ink);
+  color: var(--color-cream);
+}
+
+body {
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  min-height: 100dvh;
+}
+
+.phone-shell {
+  width: min(100%, 390px);
+  margin: 0 auto;
+  min-height: 100dvh;
+  background: #1a1614;
+  padding: 22px 18px 36px;
+}
+
+.tiktok-scroll {
+  scrollbar-width: none;
+}
+
+.tiktok-scroll::-webkit-scrollbar {
+  display: none;
+}
