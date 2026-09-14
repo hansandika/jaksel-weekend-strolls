@@ -1,6 +1,6 @@
 import { AdminChrome } from "@/components/AdminChrome";
 import { listDiscoveryRuns } from "@/lib/admin-api";
-import { DiscoverForm } from "./DiscoverForm";
+import { DiscoverForm, PhotoEnrichForm } from "./DiscoverForm";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +11,9 @@ type DiscoverPageProps = {
     found?: string;
     skipped?: string;
     error?: string;
+    photos?: string;
+    updated?: string;
+    looked?: string;
   }>;
 };
 
@@ -30,6 +33,12 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
           the queue.
         </p>
       ) : null}
+      {params.photos ? (
+        <p className="mt-4 rounded-[16px] bg-card px-4 py-3 text-[14px] text-[#8dce9a]">
+          Mapillary pass: updated {params.updated ?? "0"} of {params.looked ?? "0"}{" "}
+          candidates missing photos.
+        </p>
+      ) : null}
       {params.error ? (
         <p className="mt-4 rounded-[16px] bg-card px-4 py-3 text-[14px] text-coral">
           {params.error}
@@ -37,6 +46,24 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
       ) : null}
 
       <DiscoverForm />
+
+      <section className="mt-6 rounded-[16px] bg-card px-4 py-3.5">
+        <h2 className="text-[15px] font-semibold text-cream">Bulk Geofabrik / HOT</h2>
+        <p className="mt-2 text-[13px] leading-relaxed text-cream/55">
+          Geofabrik&apos;s Java extract is ~850MB, so the bulk load is a CLI, not
+          this page. Overpass above stays the on-demand refresh.
+        </p>
+        <pre className="mt-3 overflow-x-auto rounded-[12px] bg-[#1f1b19] px-3 py-2.5 text-[12px] text-cream/80">
+          npm run import:bulk
+        </pre>
+        <p className="mt-2 text-[12px] leading-relaxed text-cream/45">
+          Caches the PBF in <code>data/cache/</code>, clips to Jaksel + Alam
+          Sutera, upserts <code>source=geofabrik</code>, then HOT Indonesia POIs
+          as <code>source=hot</code>. Mapillary photos need{" "}
+          <code>MAPILLARY_ACCESS_TOKEN</code>.
+        </p>
+        <PhotoEnrichForm />
+      </section>
 
       <section className="mt-6">
         <h2 className="text-[16px] font-semibold tracking-[-0.02em] text-cream">

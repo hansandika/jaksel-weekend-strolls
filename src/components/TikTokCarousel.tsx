@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { isPlayableTikTokUrl, parseTikTokVideo, tiktokEmbedSrc } from "@/lib/tiktok";
 import { PlayGlyph } from "./TikTokStrip";
 
 export function TikTokCarousel({
@@ -12,6 +13,7 @@ export function TikTokCarousel({
 }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
+  const hasEmbed = urls.some(isPlayableTikTokUrl);
 
   const syncActive = useCallback(() => {
     const node = scrollerRef.current;
@@ -54,16 +56,11 @@ export function TikTokCarousel({
         className="tiktok-scroll flex snap-x snap-mandatory gap-2 overflow-x-auto pb-1"
       >
         {urls.map((url, index) => (
-          <a
+          <CarouselSlide
             key={url}
-            href={url}
-            target="_blank"
-            rel="noreferrer"
-            className="flex h-[248px] w-[158px] shrink-0 snap-start items-center justify-center rounded-[16px]"
-            style={{ background: tones[index] ?? tones[0] ?? "#3a2f2c" }}
-          >
-            <PlayGlyph />
-          </a>
+            url={url}
+            tone={tones[index] ?? tones[0] ?? "#3a2f2c"}
+          />
         ))}
       </div>
       <div className="mt-2 flex justify-center gap-1">
@@ -85,8 +82,42 @@ export function TikTokCarousel({
         ))}
       </div>
       <p className="text-center text-[11px] text-cream/40">
-        Placeholder TikTok tiles — live clips replace these URLs later.
+        {hasEmbed
+          ? "Official TikTok embeds for real video URLs. Placeholders stay as posters."
+          : "Placeholder TikTok tiles — live clips replace these URLs later."}
       </p>
     </section>
+  );
+}
+
+function CarouselSlide({ url, tone }: { url: string; tone: string }) {
+  const parsed = parseTikTokVideo(url);
+  const playable = isPlayableTikTokUrl(url);
+
+  if (playable && parsed) {
+    return (
+      <div className="h-[248px] w-[158px] shrink-0 snap-start overflow-hidden rounded-[16px] bg-[#111]">
+        <iframe
+          src={tiktokEmbedSrc(parsed.videoId)}
+          title={`TikTok ${parsed.handle}`}
+          className="h-full w-full border-0"
+          allow="encrypted-media; fullscreen; picture-in-picture; autoplay"
+          allowFullScreen
+          loading="lazy"
+        />
+      </div>
+    );
+  }
+
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noreferrer"
+      className="flex h-[248px] w-[158px] shrink-0 snap-start items-center justify-center rounded-[16px]"
+      style={{ background: tone }}
+    >
+      <PlayGlyph />
+    </a>
   );
 }

@@ -82,10 +82,11 @@ Deno.serve(async (req: Request) => {
       const { data: existing, error: existingError } = await supabase
         .from("candidates")
         .select("source_id")
-        .eq("source", "osm")
         .in("source_id", chunk);
       if (existingError) throw new Error(existingError.message);
-      for (const row of existing ?? []) existingIds.add(row.source_id);
+      for (const row of existing ?? []) {
+        if (row.source_id) existingIds.add(row.source_id);
+      }
     }
 
     const fresh = mapped.filter((item) => !existingIds.has(item.source_id));

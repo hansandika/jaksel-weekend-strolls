@@ -18,23 +18,40 @@ export function PlayGlyph() {
 export function TikTokStrip({
   urls,
   tones,
+  photos,
 }: {
   urls: string[];
   tones: string[];
+  photos?: Array<string | null>;
 }) {
   const tiles = urls.slice(0, 3);
 
   return (
     <div className="grid grid-cols-3 overflow-hidden rounded-t-[20px]">
-      {tiles.map((url, index) => (
-        <div
-          key={url}
-          className="flex h-[96px] items-center justify-center"
-          style={{ background: tones[index] ?? tones[0] ?? "#3a2f2c" }}
-        >
-          <PlayGlyph />
-        </div>
-      ))}
+      {tiles.map((url, index) => {
+        const photo = photos?.[index] ?? null;
+        return (
+          <div
+            key={url}
+            className="relative flex h-[96px] items-center justify-center overflow-hidden"
+            style={{ background: tones[index] ?? tones[0] ?? "#3a2f2c" }}
+          >
+            {photo ? (
+              // Street-level still from Mapillary; gradient fallback if the proxy 404s.
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={photo}
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            ) : null}
+            <span className="absolute inset-0 bg-[#1a1614]/35" />
+            <span className="relative">
+              <PlayGlyph />
+            </span>
+          </div>
+        );
+      })}
     </div>
   );
 }

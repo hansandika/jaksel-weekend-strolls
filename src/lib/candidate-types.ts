@@ -17,6 +17,13 @@ export type Candidate = {
   draft_tip: string | null;
   tiktok_candidates: unknown;
   tiktok_urls: string[];
+  photo_url: string | null;
+  photo_urls: string[];
+  mapillary: {
+    image_id?: string;
+    captured_at?: string | number;
+    compass_angle?: number;
+  } | null;
   raw: Record<string, unknown>;
   created_at: string;
   updated_at: string;

@@ -9,11 +9,15 @@ import {
   makeSessionToken,
 } from "@/lib/admin-auth";
 import {
+  fetchCandidatePhotos,
+  listCandidates,
   runDiscovery,
+  setCandidatePhotos,
   setCandidateStatus,
   updateCandidate,
 } from "@/lib/admin-api";
 import { fetchOverpassElements } from "@/lib/overpass";
+import { mapillaryPhotoPath, nearestMapillary } from "@/lib/mapillary";
 
 async function isHttps(): Promise<boolean> {
   const headerStore = await headers();
@@ -129,5 +133,54 @@ export async function startDiscovery(formData: FormData) {
   revalidatePath("/admin/discover");
   redirect(
     `/admin/discover?ok=1&inserted=${result.inserted}&found=${result.found}&skipped=${result.skipped}`,
+  );
+}
+
+export async function enrichPhotos() {
+  await requireSession();
+  let edge: Awaited<ReturnType<typeof fetchCandidatePhotos>> | undefined;
+  try {
+    edge = await fetchCandidatePhotos(40);
+  } catch {
+    edge = undefined;
+  }
+
+  if (edge && !edge.skipped && !edge.error) {
+    revalidatePath("/admin/queue");
+    revalidatePath("/admin/discover");
+    redirect(
+      `/admin/discover?photos=1&updated=${edge.updated}&looked=${edge.looked ?? edge.updated}`,
+    );
+  }
+
+  if (!process.env.MAPILLARY_ACCESS_TOKEN) {
+    redirect(
+      "/admin/discover?error=" +
+        encodeURIComponent("MAPILLARY_ACCESS_TOKEN is not set"),
+    );
+  }
+
+  const { candidates } = await listCandidates("?missing_photos=1&limit=40");
+  const updates = [];
+  for (const candidate of candidates) {
+    if (candidate.lat == null || candidate.lng == null) continue;
+    const hit = await nearestMapillary(candidate.lat, candidate.lng);
+    if (!hit) continue;
+    const photoUrl = mapillaryPhotoPath(hit.image_id);
+    updates.push({
+      id: candidate.id,
+      photo_url: photoUrl,
+      photo_urls: [photoUrl],
+      mapillary: hit,
+    });
+    await new Promise((resolve) => setTimeout(resolve, 180));
+  }
+  if (updates.length > 0) {
+    await setCandidatePhotos(updates);
+  }
+  revalidatePath("/admin/queue");
+  revalidatePath("/admin/discover");
+  redirect(
+    `/admin/discover?photos=1&updated=${updates.length}&looked=${candidates.length}`,
   );
 }

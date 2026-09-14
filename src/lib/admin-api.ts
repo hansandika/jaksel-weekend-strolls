@@ -100,3 +100,50 @@ export async function runDiscovery(
     }),
   });
 }
+
+export async function ingestCandidates(
+  source: string,
+  rows: Array<Record<string, unknown>>,
+  extra?: { log_run?: boolean; areas?: string[]; place_types?: string[] },
+) {
+  return adminFetch<{
+    source: string;
+    found: number;
+    inserted: number;
+    skipped: number;
+  }>("candidates", {
+    method: "POST",
+    body: JSON.stringify({
+      action: "ingest",
+      source,
+      rows,
+      ...extra,
+    }),
+  });
+}
+
+export async function setCandidatePhotos(
+  updates: Array<{
+    id: string;
+    photo_url: string;
+    photo_urls: string[];
+    mapillary: Record<string, unknown>;
+  }>,
+) {
+  return adminFetch<{ updated: number }>("candidates", {
+    method: "POST",
+    body: JSON.stringify({ action: "set_photos", updates }),
+  });
+}
+
+export async function fetchCandidatePhotos(limit = 40) {
+  return adminFetch<{
+    skipped?: boolean;
+    looked?: number;
+    updated: number;
+    error?: string;
+  }>("candidates", {
+    method: "POST",
+    body: JSON.stringify({ action: "fetch_photos", limit }),
+  });
+}

@@ -8,6 +8,7 @@ import type {
   CandidateCounts,
   QueueFilter,
 } from "@/lib/candidate-types";
+import { candidatePhotoSrc } from "@/lib/candidate-photo";
 
 const FILTER_CHIPS: { key: QueueFilter; label: string }[] = [
   { key: "all", label: "All" },
@@ -125,7 +126,8 @@ export function QueueClient({
       <div className="mt-4 space-y-2.5">
         {candidates.length === 0 ? (
           <p className="rounded-[18px] bg-card px-4 py-6 text-[14px] text-cream/55">
-            No candidates yet. Run OSM discovery for Blok M + Cipete.
+            No candidates yet. Run OSM discovery or{" "}
+            <code>npm run import:bulk</code>.
           </p>
         ) : (
           candidates.map((candidate) => (
@@ -142,8 +144,10 @@ export function QueueClient({
               />
               <Link
                 href={`/admin/candidates/${candidate.id}`}
-                className="min-w-0 flex-1"
+                className="flex min-w-0 flex-1 items-center gap-3"
               >
+                <QueueThumb candidate={candidate} />
+                <span className="min-w-0 flex-1">
                 <p className="truncate text-[15px] font-semibold tracking-[-0.02em] text-cream">
                   {candidate.name}
                 </p>
@@ -153,6 +157,7 @@ export function QueueClient({
                     ? ` · ${candidate.place_types.join(", ")}`
                     : ""}
                 </p>
+                </span>
               </Link>
               <StatusBadge status={candidate.status} />
             </article>
@@ -164,7 +169,7 @@ export function QueueClient({
         Tap row → detail · checkbox → bulk actions
       </p>
       <p className="mt-1 text-[11px] text-cream/30">
-        Places from OpenStreetMap. Not Google Places.
+        Places from OpenStreetMap (Overpass, Geofabrik, HOT). Not Google Places.
       </p>
     </>
   );
@@ -186,6 +191,21 @@ function CountPill({
   return (
     <span className={`rounded-full px-3 py-1.5 text-[12px] font-semibold ${cls}`}>
       {label}
+    </span>
+  );
+}
+
+function QueueThumb({ candidate }: { candidate: Candidate }) {
+  const src = candidatePhotoSrc(candidate);
+  return (
+    <span
+      className="relative h-12 w-12 shrink-0 overflow-hidden rounded-[12px]"
+      style={{ background: "linear-gradient(160deg, #4A342C, #2f3f48)" }}
+    >
+      {src ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={src} alt="" className="h-full w-full object-cover" />
+      ) : null}
     </span>
   );
 }

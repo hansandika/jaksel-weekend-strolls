@@ -1,5 +1,7 @@
 import { saveCandidateDraft, setOneStatus } from "@/app/admin/actions";
 import type { Candidate } from "@/lib/candidate-types";
+import { candidatePhotoSrc } from "@/lib/candidate-photo";
+import { isPlayableTikTokUrl, parseTikTokVideo, tiktokEmbedSrc } from "@/lib/tiktok";
 
 function osmHref(candidate: Candidate): string | null {
   if (!candidate.source_id) return null;
@@ -14,9 +16,31 @@ function mapHref(candidate: Candidate): string | null {
 export function CandidateEditor({ candidate }: { candidate: Candidate }) {
   const osm = osmHref(candidate);
   const map = mapHref(candidate);
+  const photo = candidatePhotoSrc(candidate);
+  const playableTikToks = (candidate.tiktok_urls ?? []).filter(isPlayableTikTokUrl);
 
   return (
     <div className="mt-4 space-y-3">
+      {photo ? (
+        <div className="overflow-hidden rounded-[16px] bg-card">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={photo}
+            alt={`Street photo near ${candidate.name}`}
+            className="h-[180px] w-full object-cover"
+          />
+          <p className="px-4 py-2 text-[11px] text-cream/40">
+            Mapillary street photo · CC-BY-SA
+          </p>
+        </div>
+      ) : (
+        <div
+          className="flex h-[120px] items-center justify-center rounded-[16px] text-[12px] text-cream/45"
+          style={{ background: "linear-gradient(160deg, #4A342C, #2f3f48)" }}
+        >
+          No Mapillary photo yet
+        </div>
+      )}
       <section className="rounded-[16px] bg-card px-4 py-3.5">
         <div className="flex flex-wrap gap-1.5">
           <Pill>{candidate.status.replaceAll("_", " ")}</Pill>
@@ -90,6 +114,28 @@ export function CandidateEditor({ candidate }: { candidate: Candidate }) {
           Save draft
         </button>
       </form>
+
+      {playableTikToks.length > 0 ? (
+        <section className="space-y-2">
+          <p className="text-[12px] text-cream/50">TikTok embeds</p>
+          <div className="flex gap-2 overflow-x-auto">
+            {playableTikToks.map((url) => {
+              const parsed = parseTikTokVideo(url);
+              if (!parsed) return null;
+              return (
+                <iframe
+                  key={url}
+                  src={tiktokEmbedSrc(parsed.videoId)}
+                  title={`TikTok ${parsed.handle}`}
+                  className="h-[248px] w-[158px] shrink-0 rounded-[16px] border-0 bg-[#111]"
+                  allow="encrypted-media; fullscreen; picture-in-picture; autoplay"
+                  allowFullScreen
+                />
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }

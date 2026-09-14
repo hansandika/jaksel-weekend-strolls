@@ -1,7 +1,7 @@
 "use client";
 
 import { useFormStatus } from "react-dom";
-import { startDiscovery } from "@/app/admin/actions";
+import { enrichPhotos, startDiscovery } from "@/app/admin/actions";
 import {
   DISCOVERY_AREAS,
   DISCOVERY_PLACE_TYPES,
@@ -71,10 +71,32 @@ export function DiscoverForm() {
       </fieldset>
 
       <p className="text-[12px] leading-relaxed text-cream/45">
-        Dedupes on OSM type/id. Existing approved/rejected rows are left alone.
-        No TikTok scrape and no auto-publish to the weekend pack.
+        Dedupes on OSM type/id across Overpass, Geofabrik, and HOT. Existing
+        approved/rejected rows are left alone. No TikTok scrape and no
+        auto-publish to the weekend pack.
       </p>
       <SubmitButton />
     </form>
+  );
+}
+
+export function PhotoEnrichForm() {
+  return (
+    <form action={enrichPhotos} className="mt-3">
+      <PhotoSubmit />
+    </form>
+  );
+}
+
+function PhotoSubmit() {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="flex h-11 w-full items-center justify-center rounded-[12px] border border-cream/15 text-[15px] font-semibold text-cream disabled:opacity-60"
+    >
+      {pending ? "Looking up Mapillary…" : "Enrich Mapillary photos (40)"}
+    </button>
   );
 }

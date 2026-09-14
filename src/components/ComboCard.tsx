@@ -1,13 +1,18 @@
 import Link from "next/link";
 import type { Combo } from "@/lib/types";
 import { displayLabel } from "@/lib/labels";
-import { formatComboMeta } from "@/lib/pack";
+import { formatComboMeta, getComboCardPhotos } from "@/lib/pack";
 import { TikTokStrip } from "./TikTokStrip";
 
 export function ComboCard({ combo }: { combo: Combo }) {
+  const photos = getComboCardPhotos(combo);
   return (
     <article className="overflow-hidden rounded-[20px] bg-card">
-      <TikTokStrip urls={combo.tiktokUrls} tones={combo.posterTones} />
+      <TikTokStrip
+        urls={combo.tiktokUrls}
+        tones={combo.posterTones}
+        photos={photos}
+      />
       <div className="px-4 pb-4 pt-3.5">
         <h3 className="text-[17px] font-semibold leading-snug tracking-[-0.02em] text-cream">
           {combo.title}
