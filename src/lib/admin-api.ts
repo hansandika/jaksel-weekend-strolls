@@ -22,13 +22,15 @@ function adminHeaders(): HeadersInit {
 
 async function adminFetch<T>(
   fn: "discover" | "candidates",
-  init?: RequestInit & { search?: string },
+  init?: RequestInit & { search?: string; timeoutMs?: number },
 ): Promise<T> {
-  const url = `${FUNCTIONS_URL}/${fn}${init?.search ?? ""}`;
+  const { search, timeoutMs, ...requestInit } = init ?? {};
+  const url = `${FUNCTIONS_URL}/${fn}${search ?? ""}`;
   const response = await fetch(url, {
-    ...init,
-    headers: { ...adminHeaders(), ...init?.headers },
+    ...requestInit,
+    headers: { ...adminHeaders(), ...requestInit.headers },
     cache: "no-store",
+    signal: requestInit.signal ?? (timeoutMs ? AbortSignal.timeout(timeoutMs) : undefined),
   });
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
@@ -145,5 +147,6 @@ export async function fetchCandidatePhotos(limit = 40) {
   }>("candidates", {
     method: "POST",
     body: JSON.stringify({ action: "fetch_photos", limit }),
+    timeoutMs: 15_000,
   });
 }

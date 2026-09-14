@@ -80,23 +80,37 @@ export function DiscoverForm() {
   );
 }
 
-export function PhotoEnrichForm() {
+export function PhotoEnrichForm({
+  tokenConfigured,
+}: {
+  tokenConfigured: boolean;
+}) {
   return (
     <form action={enrichPhotos} className="mt-3">
-      <PhotoSubmit />
+      <PhotoSubmit tokenConfigured={tokenConfigured} />
     </form>
   );
 }
 
-function PhotoSubmit() {
+function PhotoSubmit({ tokenConfigured }: { tokenConfigured: boolean }) {
   const { pending } = useFormStatus();
+  const disabled = pending || !tokenConfigured;
   return (
     <button
       type="submit"
-      disabled={pending}
+      disabled={disabled}
+      title={
+        tokenConfigured
+          ? undefined
+          : "MAPILLARY_ACCESS_TOKEN is not injected in this app yet"
+      }
       className="flex h-11 w-full items-center justify-center rounded-[12px] border border-cream/15 text-[15px] font-semibold text-cream disabled:opacity-60"
     >
-      {pending ? "Looking up Mapillary…" : "Enrich Mapillary photos (40)"}
+      {pending
+        ? "Looking up Mapillary…"
+        : tokenConfigured
+          ? "Enrich Mapillary photos (40)"
+          : "Mapillary token not injected"}
     </button>
   );
 }

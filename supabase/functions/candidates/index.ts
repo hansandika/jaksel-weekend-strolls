@@ -305,12 +305,13 @@ Deno.serve(async (req: Request) => {
   }
 
   if (body.action === "fetch_photos") {
-    const token = Deno.env.get("MAPILLARY_ACCESS_TOKEN");
+    const token = (Deno.env.get("MAPILLARY_ACCESS_TOKEN") ?? "").trim();
     if (!token) {
       return json({
         skipped: true,
         updated: 0,
-        error: "MAPILLARY_ACCESS_TOKEN is not set on this function",
+        error:
+          "MAPILLARY_ACCESS_TOKEN is not set on this function. The parent environment must inject it as a Function secret.",
       });
     }
     const limit = Math.min(Math.max(Number(body.limit) || 40, 1), 80);

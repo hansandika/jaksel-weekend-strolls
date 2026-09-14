@@ -300,7 +300,9 @@ async function listAllCandidates() {
 async function enrichPhotos() {
   const token = mapillaryToken();
   if (!token) {
-    log("Mapillary skip: MAPILLARY_ACCESS_TOKEN is not set");
+    log(
+      "Mapillary skip: MAPILLARY_ACCESS_TOKEN is not set (parent Cloud Agent environment must inject it; listed in CLOUD_AGENT_INJECTED_SECRET_NAMES)",
+    );
     return { skipped: true, updated: 0 };
   }
   const candidates = await listAllCandidates();

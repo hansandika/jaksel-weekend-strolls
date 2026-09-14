@@ -13,7 +13,7 @@ M2.5 enriches that queue from **Geofabrik** (bulk OSM) and **HOT Indonesia POIs*
 ```bash
 cp .env.example .env.local
 # set NEXT_PUBLIC_SUPABASE_ANON_KEY + ADMIN_SECRET
-# optional: MAPILLARY_ACCESS_TOKEN for street photos
+# MAPILLARY_ACCESS_TOKEN — parent Cloud Agent injects this; never commit it
 npm install
 npm run dev
 ```
@@ -86,7 +86,15 @@ Photos only (after candidates exist):
 npm run import:photos
 ```
 
-Set `MAPILLARY_ACCESS_TOKEN` in `.env.local`. If Edge Functions should fetch photos too, set the same name as a Supabase Function secret (`supabase secrets set MAPILLARY_ACCESS_TOKEN=…`). The Next `/api/mapillary/[id]` route proxies thumbnails so signed CDN URLs are not stored. No token is committed.
+Mapillary reads `MAPILLARY_ACCESS_TOKEN` from process env (Next + CLI) and `Deno.env` (candidates Edge Function). The parent Cloud Agent environment injects that name (it should appear in `CLOUD_AGENT_INJECTED_SECRET_NAMES`). Secrets added after a run starts are not visible until a new run. Also set the same name as a Supabase Function secret (`supabase secrets set MAPILLARY_ACCESS_TOKEN=…`) so `fetch_photos` can run on Edge.
+
+If the token is missing, nothing hangs:
+
+- `/admin/discover` shows a coral error immediately and disables “Enrich Mapillary photos”
+- `npm run import:photos` logs a skip and exits
+- Edge `fetch_photos` returns `{ skipped: true, error }` without calling Mapillary
+
+The Next `/api/mapillary/[id]` route proxies thumbnails so signed CDN URLs are not stored. No token is committed.
 
 Overpass stays the refresh path for `/admin/discover`. Some Overpass mirrors return **406** from AWS Edge IPs; the Next action tries the Function first, then fetches OSM from the app server and posts elements into `discover`.
 
@@ -101,7 +109,8 @@ See `.env.example`:
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `ADMIN_SECRET`
-- `MAPILLARY_ACCESS_TOKEN` (optional; skip photos cleanly when unset)
+- `MAPILLARY_ACCESS_TOKEN` (injected by the parent environment; skip photos with a visible error when unset)
+- `CLOUD_AGENT_INJECTED_SECRET_NAMES` (optional diagnostic; should include `MAPILLARY_ACCESS_TOKEN` when the parent injects it)
 
 ## Out of scope
 

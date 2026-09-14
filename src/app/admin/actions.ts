@@ -17,7 +17,12 @@ import {
   updateCandidate,
 } from "@/lib/admin-api";
 import { fetchOverpassElements } from "@/lib/overpass";
-import { mapillaryPhotoPath, nearestMapillary } from "@/lib/mapillary";
+import {
+  MAPILLARY_TOKEN_MISSING,
+  mapillaryConfigured,
+  mapillaryPhotoPath,
+  nearestMapillary,
+} from "@/lib/mapillary";
 
 async function isHttps(): Promise<boolean> {
   const headerStore = await headers();
@@ -138,6 +143,7 @@ export async function startDiscovery(formData: FormData) {
 
 export async function enrichPhotos() {
   await requireSession();
+  const nextHasToken = mapillaryConfigured();
   let edge: Awaited<ReturnType<typeof fetchCandidatePhotos>> | undefined;
   try {
     edge = await fetchCandidatePhotos(40);
@@ -153,10 +159,9 @@ export async function enrichPhotos() {
     );
   }
 
-  if (!process.env.MAPILLARY_ACCESS_TOKEN) {
+  if (!nextHasToken) {
     redirect(
-      "/admin/discover?error=" +
-        encodeURIComponent("MAPILLARY_ACCESS_TOKEN is not set"),
+      "/admin/discover?error=" + encodeURIComponent(MAPILLARY_TOKEN_MISSING),
     );
   }
 

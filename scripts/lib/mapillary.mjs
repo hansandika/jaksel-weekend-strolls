@@ -1,14 +1,19 @@
 const GRAPH = "https://graph.mapillary.com";
 
 export function mapillaryToken() {
-  return process.env.MAPILLARY_ACCESS_TOKEN || "";
+  return (process.env.MAPILLARY_ACCESS_TOKEN || "").trim();
 }
 
 export function photoPath(imageId) {
   return `/api/mapillary/${imageId}`;
 }
 
-export async function nearestMapillaryImages(lat, lng, { limit = 3, radius = 50 } = {}) {
+export async function nearestMapillaryImages(
+  lat,
+  lng,
+  { limit = 3, radius = 50 } = {},
+  attempt = 0,
+) {
   const token = mapillaryToken();
   if (!token) return [];
   const params = new URLSearchParams({
@@ -23,9 +28,9 @@ export async function nearestMapillaryImages(lat, lng, { limit = 3, radius = 50 
     signal: AbortSignal.timeout(8000),
   });
   if (!response.ok) {
-    if (response.status === 429) {
+    if (response.status === 429 && attempt < 1) {
       await sleep(1500);
-      return nearestMapillaryImages(lat, lng, { limit, radius });
+      return nearestMapillaryImages(lat, lng, { limit, radius }, attempt + 1);
     }
     return [];
   }

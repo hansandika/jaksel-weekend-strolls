@@ -13,7 +13,7 @@ export async function GET(
   if (!ID_RE.test(id)) {
     return NextResponse.json({ error: "bad id" }, { status: 400 });
   }
-  const token = process.env.MAPILLARY_ACCESS_TOKEN;
+  const token = (process.env.MAPILLARY_ACCESS_TOKEN ?? "").trim();
   if (!token) {
     return NextResponse.json({ error: "mapillary unset" }, { status: 404 });
   }
@@ -24,6 +24,7 @@ export async function GET(
       headers: { Authorization: `OAuth ${token}` },
       cache: "force-cache",
       next: { revalidate: 86400 },
+      signal: AbortSignal.timeout(8000),
     },
   );
   if (!meta.ok) {
@@ -35,7 +36,10 @@ export async function GET(
     return NextResponse.json({ error: "no thumbnail" }, { status: 404 });
   }
 
-  const image = await fetch(thumb, { cache: "force-cache" });
+  const image = await fetch(thumb, {
+    cache: "force-cache",
+    signal: AbortSignal.timeout(8000),
+  });
   if (!image.ok || !image.body) {
     return NextResponse.json({ error: "thumb fetch failed" }, { status: 502 });
   }

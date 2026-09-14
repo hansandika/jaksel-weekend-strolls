@@ -1,5 +1,6 @@
 import { AdminChrome } from "@/components/AdminChrome";
 import { listDiscoveryRuns } from "@/lib/admin-api";
+import { MAPILLARY_TOKEN_MISSING, mapillaryConfigured } from "@/lib/mapillary";
 import { DiscoverForm, PhotoEnrichForm } from "./DiscoverForm";
 
 export const dynamic = "force-dynamic";
@@ -20,6 +21,9 @@ type DiscoverPageProps = {
 export default async function DiscoverPage({ searchParams }: DiscoverPageProps) {
   const params = await searchParams;
   const runs = await listDiscoveryRuns().catch(() => []);
+  const hasMapillaryToken = mapillaryConfigured();
+  const mapillaryError =
+    !hasMapillaryToken && !params.error ? MAPILLARY_TOKEN_MISSING : params.error;
 
   return (
     <AdminChrome
@@ -39,9 +43,9 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
           candidates missing photos.
         </p>
       ) : null}
-      {params.error ? (
+      {mapillaryError ? (
         <p className="mt-4 rounded-[16px] bg-card px-4 py-3 text-[14px] text-coral">
-          {params.error}
+          {mapillaryError}
         </p>
       ) : null}
 
@@ -60,9 +64,9 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
           Caches the PBF in <code>data/cache/</code>, clips to Jaksel + Alam
           Sutera, upserts <code>source=geofabrik</code>, then HOT Indonesia POIs
           as <code>source=hot</code>. Mapillary photos need{" "}
-          <code>MAPILLARY_ACCESS_TOKEN</code>.
+          <code>MAPILLARY_ACCESS_TOKEN</code> from the parent environment.
         </p>
-        <PhotoEnrichForm />
+        <PhotoEnrichForm tokenConfigured={hasMapillaryToken} />
       </section>
 
       <section className="mt-6">
