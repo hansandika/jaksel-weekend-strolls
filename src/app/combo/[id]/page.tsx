@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { StopList } from "@/components/StopList";
 import { TikTokCarousel } from "@/components/TikTokCarousel";
-import { formatComboMeta, getCombo, getLivePack } from "@/lib/pack";
+import { getCombo, getLivePack } from "@/lib/pack";
 
 type ComboPageProps = {
   params: Promise<{ id: string }>;
@@ -63,7 +63,6 @@ export default async function ComboPage({ params }: ComboPageProps) {
           </span>
         ))}
       </div>
-      <p className="mt-2 text-[12px] text-cream/40">{formatComboMeta(combo)}</p>
 
       <div className="mt-5">
         <TikTokCarousel urls={combo.tiktokUrls} tones={combo.posterTones} />
@@ -77,18 +76,14 @@ export default async function ComboPage({ params }: ComboPageProps) {
       </section>
 
       <section className="mt-5 rounded-[16px] bg-card px-4 py-3.5">
-        <p className="text-[12px] font-semibold uppercase tracking-[0.06em] text-coral">
-          Tip
-        </p>
+        <p className="text-[13px] font-semibold text-coral">Tip</p>
         <p className="mt-1.5 text-[14px] leading-relaxed text-cream/80">
           {combo.tip}
         </p>
       </section>
 
       <section className="mt-3 rounded-[16px] bg-card px-4 py-3.5">
-        <p className="text-[12px] font-semibold uppercase tracking-[0.06em] text-coral">
-          Rain notes
-        </p>
+        <p className="text-[13px] font-semibold text-coral">Rain notes</p>
         <p className="mt-1.5 text-[14px] leading-relaxed text-cream/80">
           {combo.rainNotes}
         </p>
