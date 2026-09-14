@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Combo } from "@/lib/types";
+import { displayLabel } from "@/lib/labels";
 import { formatComboMeta } from "@/lib/pack";
 import { TikTokStrip } from "./TikTokStrip";
 
@@ -20,7 +21,7 @@ export function ComboCard({ combo }: { combo: Combo }) {
               key={tag}
               className="rounded-full bg-[#1f1b19] px-2.5 py-1 text-[11px] text-cream/70"
             >
-              {tag}
+              {displayLabel(tag)}
             </span>
           ))}
         </div>

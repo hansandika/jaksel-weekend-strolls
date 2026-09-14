@@ -1,3 +1,4 @@
+import { displayLabel } from "@/lib/labels";
 import type { WeekendEvent } from "@/lib/types";
 
 export function EventChip({ event }: { event: WeekendEvent }) {
@@ -12,7 +13,7 @@ export function EventChip({ event }: { event: WeekendEvent }) {
         </p>
       </div>
       <span className="mt-0.5 shrink-0 rounded-full border border-coral/70 px-2.5 py-[3px] text-[11px] font-medium text-coral">
-        {event.kind}
+        {displayLabel(event.kind)}
       </span>
     </section>
   );

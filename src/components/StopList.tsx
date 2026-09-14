@@ -1,3 +1,4 @@
+import { displayLabel } from "@/lib/labels";
 import type { Stop } from "@/lib/types";
 
 export function StopList({ stops }: { stops: Stop[] }) {
@@ -14,7 +15,7 @@ export function StopList({ stops }: { stops: Stop[] }) {
               {stop.name}
             </p>
             <span className="shrink-0 rounded-full bg-[#1f1b19] px-2.5 py-1 text-[11px] text-coral">
-              {stop.role}
+              {displayLabel(stop.role)}
             </span>
           </div>
           <p className="mt-1 text-[12px] text-cream/50">{stop.area}</p>

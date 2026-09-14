@@ -1,3 +1,4 @@
+import { displayLabel } from "@/lib/labels";
 import type { WeekendPack } from "@/lib/types";
 
 export function AskBar({ pack }: { pack: WeekendPack }) {
@@ -30,7 +31,7 @@ export function AskBar({ pack }: { pack: WeekendPack }) {
             key={chip}
             className="rounded-full bg-[#2b2522] px-3 py-1.5 text-[12px] text-cream/70"
           >
-            {chip}
+            {displayLabel(chip)}
           </span>
         ))}
       </div>
