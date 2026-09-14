@@ -1,0 +1,177 @@
+{
+  "isoWeek": "2026-W38",
+  "weekLabel": "W38",
+  "status": "live",
+  "brand": "Jaksel",
+  "title": "Weekend Strolls",
+  "tagline": "Pick a combo. Or ask for a card.",
+  "event": {
+    "name": "Jakarta Dessert Week",
+    "endsOn": "2026-09-20",
+    "endsLabel": "Ends Sun 20 Sep",
+    "note": "wraps Sat softener",
+    "kind": "event"
+  },
+  "askPlaceholder": "give me alam sutera card...",
+  "askChips": ["places in Blok M", "Cipete cafés", "alam sutera card"],
+  "askHint": "AI drafts → you approve TikToks before live",
+  "pairing": {
+    "satComboId": "blok-m-food-flex",
+    "sunComboId": "cafe-mall-vietnam",
+    "label": "Sat → Blok M food flex · Sun → Café → mall → Vietnam coffee"
+  },
+  "combos": [
+    {
+      "id": "cafe-mall-vietnam",
+      "title": "Café work → mall → Vietnam coffee",
+      "subtitle": "Laptop morning, stroll afternoon, soft landing",
+      "vibe": "Soft",
+      "duration": "~3.5h",
+      "area": "Cipete/PI",
+      "budget": "Rp120-200k",
+      "tags": ["plugs", "AC", "new-coffee"],
+      "tiktokUrls": [
+        "https://www.tiktok.com/@jaksel.strolls/video/7380000000000000001",
+        "https://www.tiktok.com/@jaksel.strolls/video/7380000000000000002",
+        "https://www.tiktok.com/@jaksel.strolls/video/7380000000000000003"
+      ],
+      "posterTones": ["#4A342C", "#3E4F57", "#6B5344"],
+      "stops": [
+        {
+          "name": "Dua Coffee Cipete",
+          "area": "Cipete Raya",
+          "role": "work",
+          "note": "Long table, plugs, and a quiet first 90 minutes before the mall pulse."
+        },
+        {
+          "name": "Pondok Indah Mall",
+          "area": "Pondok Indah",
+          "role": "stroll",
+          "note": "Covered wander, people-watch, and a cool-down walk between cafés."
+        },
+        {
+          "name": "Cộng Cà Phê PI",
+          "area": "Pondok Indah",
+          "role": "landing",
+          "note": "Coconut coffee landing — sweet, slow, no laptop guilt."
+        }
+      ],
+      "tip": "Start the work block by 10:00 so the Vietnam coffee stop still feels like a landing, not another queue.",
+      "rainNotes": "Skip the outdoor terrace at Dua. PI is fully covered; Cộng is the indoor backup if Cipete streets flood."
+    },
+    {
+      "id": "blok-m-food-flex",
+      "title": "Blok M food flex",
+      "subtitle": "Seto → Obihiro → JDW dessert hop",
+      "vibe": "Food walk",
+      "duration": "~5h",
+      "area": "Melawai",
+      "budget": "Rp150-250k",
+      "tags": ["viral-food", "queue-ok", "MRT"],
+      "tiktokUrls": [
+        "https://www.tiktok.com/@jaksel.strolls/video/7380000000000000011",
+        "https://www.tiktok.com/@jaksel.strolls/video/7380000000000000012",
+        "https://www.tiktok.com/@jaksel.strolls/video/7380000000000000013"
+      ],
+      "posterTones": ["#5A3A2C", "#3A4A55", "#6E4E3A"],
+      "stops": [
+        {
+          "name": "Seto Menchi Grill",
+          "area": "Pasaraya Blok M",
+          "role": "eat",
+          "note": "Menchi set first — sliding tamago only if the queue is moving."
+        },
+        {
+          "name": "Obihiro Nikudon",
+          "area": "Melawai 5",
+          "role": "eat",
+          "note": "Queue is the feature. Grab a number, then wander Melawai 5 while you wait."
+        },
+        {
+          "name": "JDW dessert hop",
+          "area": "Melawai / nearby pastry",
+          "role": "dessert",
+          "note": "Jakarta Dessert Week City Takeover — pick one dangdut-menu pastry, not three."
+        }
+      ],
+      "tip": "Ride MRT to Blok M. Do Obihiro before 11:30 or after 15:00 unless you want a two-hour line as the main event.",
+      "rainNotes": "Pasaraya and Melawai shophouses are mostly covered. If the alley floods, stay inside Pasaraya and swap Obihiro for a mall Japanese counter."
+    },
+    {
+      "id": "soft-sunday-cipete",
+      "title": "Soft Sunday café loop",
+      "subtitle": "Anchor café → third place → Bansan/Presto",
+      "vibe": "Café soft",
+      "duration": "~4h",
+      "area": "Cipete-Kemang",
+      "budget": "Rp120-200k",
+      "tags": ["slow", "latte", "recovery"],
+      "tiktokUrls": [
+        "https://www.tiktok.com/@jaksel.strolls/video/7380000000000000021",
+        "https://www.tiktok.com/@jaksel.strolls/video/7380000000000000022",
+        "https://www.tiktok.com/@jaksel.strolls/video/7380000000000000023"
+      ],
+      "posterTones": ["#3F322C", "#45535A", "#5C4638"],
+      "stops": [
+        {
+          "name": "Two Cents Cipete",
+          "area": "Cipete",
+          "role": "anchor",
+          "note": "First latte, no agenda. Sit until the sun is less aggressive."
+        },
+        {
+          "name": "Giyanti Coffee Roastery",
+          "area": "Cipete / Kemang edge",
+          "role": "third-place",
+          "note": "Walkable third place — paper, playlist, one pastry max."
+        },
+        {
+          "name": "BANSAN / Ayam Presto",
+          "area": "Cipete",
+          "role": "recovery",
+          "note": "Nanban bowl at BANSAN or classic ayam presto if you want home-style instead of café food."
+        }
+      ],
+      "tip": "This is a recovery loop, not a crawl. One drink per stop. Leave the laptop at home.",
+      "rainNotes": "Grab a Grab between Two Cents and Giyanti if Cipete Raya is ponding. Both BANSAN and Presto are indoor."
+    },
+    {
+      "id": "rain-indoor-pi",
+      "title": "PI rain bunker",
+      "subtitle": "Covered mall loop, cinema buffer, dessert if skies open",
+      "vibe": "Indoor",
+      "duration": "~4h",
+      "area": "Pondok Indah",
+      "budget": "Rp150-250k",
+      "tags": ["AC", "covered", "cinema"],
+      "tiktokUrls": [
+        "https://www.tiktok.com/@jaksel.strolls/video/7380000000000000031",
+        "https://www.tiktok.com/@jaksel.strolls/video/7380000000000000032",
+        "https://www.tiktok.com/@jaksel.strolls/video/7380000000000000033"
+      ],
+      "posterTones": ["#3A2F2C", "#2F3F48", "#5A463C"],
+      "stops": [
+        {
+          "name": "Pondok Indah Mall 1–2",
+          "area": "Pondok Indah",
+          "role": "stroll",
+          "note": "Skybridge the whole loop. No street crossing required."
+        },
+        {
+          "name": "Cinema XXI PI",
+          "area": "PI Mall",
+          "role": "buffer",
+          "note": "Matinee as rain insurance — two hours of AC while the sky empties."
+        },
+        {
+          "name": "JDW pastry counter",
+          "area": "PI / nearby takeaway",
+          "role": "dessert",
+          "note": "If the rain breaks, grab one City Takeover dessert to go. If not, eat it in the food court."
+        }
+      ],
+      "tip": "This is the wet-weekend swap for the Cipete loops. Park once. Do not add a Blok M hop.",
+      "rainNotes": "Built for rain. If PI parking is jammed, drop at the basement and stay inside until closing."
+    }
+  ]
+}
