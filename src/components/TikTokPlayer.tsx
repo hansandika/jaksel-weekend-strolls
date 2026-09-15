@@ -11,16 +11,20 @@ export function TikTokPlayer({
   videoId,
   handle,
   autoplay,
+  watchUrl,
   className,
   compact = false,
 }: {
   videoId: string;
   handle: string;
   autoplay: boolean;
+  watchUrl?: string;
   className?: string;
   compact?: boolean;
 }) {
   const frameRef = useRef<HTMLIFrameElement>(null);
+  const href =
+    watchUrl ?? `https://www.tiktok.com/@${handle}/video/${videoId}`;
 
   useEffect(() => {
     const frame = frameRef.current;
@@ -55,19 +59,29 @@ export function TikTokPlayer({
   }, [autoplay, videoId]);
 
   return (
-    <iframe
-      ref={frameRef}
-      src={tiktokEmbedSrc(videoId, {
-        autoplay,
-        muted: true,
-        musicInfo: !compact,
-        description: !compact,
-      })}
-      title={`TikTok @${handle}`}
-      className={className}
-      allow={TIKTOK_IFRAME_ALLOW}
-      allowFullScreen
-      referrerPolicy="strict-origin-when-cross-origin"
-    />
+    <div className={`relative overflow-hidden ${className ?? ""}`}>
+      <iframe
+        ref={frameRef}
+        src={tiktokEmbedSrc(videoId, {
+          autoplay,
+          muted: true,
+          musicInfo: !compact,
+          description: !compact,
+        })}
+        title={`TikTok @${handle}`}
+        className="pointer-events-none absolute inset-0 h-full w-full border-0"
+        allow={TIKTOK_IFRAME_ALLOW}
+        allowFullScreen
+        referrerPolicy="strict-origin-when-cross-origin"
+        tabIndex={-1}
+      />
+      <a
+        href={href}
+        target="_blank"
+        rel="noreferrer"
+        className="absolute inset-0 z-10"
+        aria-label={`Open @${handle} on TikTok`}
+      />
+    </div>
   );
 }

@@ -5,8 +5,10 @@ import { HubHeader } from "@/components/HubHeader";
 import { SuggestedPairing } from "@/components/SuggestedPairing";
 import { getLivePack } from "@/lib/pack";
 
-export default function HubPage() {
-  const pack = getLivePack();
+export const dynamic = "force-dynamic";
+
+export default async function HubPage() {
+  const pack = await getLivePack();
 
   return (
     <main className="phone-shell">

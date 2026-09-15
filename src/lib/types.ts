@@ -1,10 +1,16 @@
 export type PackStatus = "live" | "draft";
 
 export type Stop = {
+  candidateId?: string;
   name: string;
   area: string;
   role: string;
   note: string;
+  lat?: number | null;
+  lng?: number | null;
+  googleMapsUrl: string;
+  photoUrl: string | null;
+  tiktokUrl: string | null;
 };
 
 export type Combo = {
@@ -28,12 +34,14 @@ export type WeekendEvent = {
   endsOn: string;
   endsLabel: string;
   note: string;
-  kind: "event";
+  kind: "event" | "live";
 };
 
 export type SuggestedPairing = {
   satComboId: string;
   sunComboId: string;
+  satLabel: string;
+  sunLabel: string;
   label: string;
 };
 

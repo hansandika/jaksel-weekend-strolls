@@ -17,7 +17,7 @@ function safeUrl(value: string): URL | null {
 
 /**
  * Real TikTok watch URLs look like tiktok.com/@user/video/{id}.
- * Pack placeholders use @jaksel.strolls and a 738000… id — those stay posters.
+ * Legacy @jaksel.strolls / 738000… ids are not playable on the public hub.
  */
 export function parseTikTokVideo(url: string): TikTokVideoRef | null {
   const parsed = safeUrl(url);

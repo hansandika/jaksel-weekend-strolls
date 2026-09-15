@@ -58,6 +58,21 @@ export async function listCandidates(search = ""): Promise<{
   return adminFetch("candidates", { search });
 }
 
+export async function listAllCandidates(): Promise<Candidate[]> {
+  const all: Candidate[] = [];
+  const limit = 1000;
+  let offset = 0;
+  for (let page = 0; page < 6; page += 1) {
+    const { candidates } = await listCandidates(
+      `?limit=${limit}&offset=${offset}`,
+    );
+    all.push(...candidates);
+    if (candidates.length < limit) break;
+    offset += limit;
+  }
+  return all;
+}
+
 export async function getCandidate(id: string): Promise<Candidate> {
   const payload = await adminFetch<{ candidate: Candidate }>("candidates", {
     search: `?id=${encodeURIComponent(id)}`,

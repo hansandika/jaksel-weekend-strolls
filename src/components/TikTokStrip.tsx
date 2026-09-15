@@ -55,6 +55,29 @@ export function TikTokStrip({
     return () => observer.disconnect();
   }, []);
 
+  if (tiles.length === 0) {
+    return (
+      <div className="grid grid-cols-3 overflow-hidden rounded-t-[20px]">
+        {(photos ?? [null, null, null]).slice(0, 3).map((photo, index) => (
+          <div
+            key={`photo-${index}`}
+            className="relative h-[96px] overflow-hidden bg-[#2a2420]"
+            style={{ background: tones[index] ?? tones[0] ?? "#3a2f2c" }}
+          >
+            {photo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={photo}
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            ) : null}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div
       ref={rootRef}
@@ -62,8 +85,10 @@ export function TikTokStrip({
     >
       {tiles.map((url, index) => {
         const photo = photos?.[index] ?? null;
-        const parsed = parseTikTokVideo(url);
+        const parsed = url ? parseTikTokVideo(url) : null;
+        const playable = Boolean(url) && isPlayableTikTokUrl(url);
         const playHere =
+          playable &&
           index === firstPlayable &&
           Boolean(parsed) &&
           inView &&
@@ -71,24 +96,20 @@ export function TikTokStrip({
 
         if (playHere && parsed) {
           return (
-            <div
-              key={url}
-              className="relative h-[96px] overflow-hidden bg-[#111]"
-            >
-              <TikTokPlayer
-                videoId={parsed.videoId}
-                handle={parsed.handle}
-                autoplay
-                compact
-                className="h-full w-full border-0"
-              />
-            </div>
+            <TikTokPlayer
+              key={url || `tile-${index}`}
+              videoId={parsed.videoId}
+              handle={parsed.handle}
+              watchUrl={parsed.url}
+              autoplay
+              compact
+              className="h-[96px] bg-[#111]"
+            />
           );
         }
 
-        return (
+        const tile = (
           <div
-            key={url}
             className="relative flex h-[96px] items-center justify-center overflow-hidden"
             style={{ background: tones[index] ?? tones[0] ?? "#3a2f2c" }}
           >
@@ -107,6 +128,22 @@ export function TikTokStrip({
             </span>
           </div>
         );
+
+        if (parsed && playable) {
+          return (
+            <a
+              key={url || `tile-${index}`}
+              href={parsed.url}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={`Open @${parsed.handle} on TikTok`}
+            >
+              {tile}
+            </a>
+          );
+        }
+
+        return <div key={url || `tile-${index}`}>{tile}</div>;
       })}
     </div>
   );

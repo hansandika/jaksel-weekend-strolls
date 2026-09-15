@@ -5,11 +5,12 @@ import { formatComboMeta, getComboCardPhotos } from "@/lib/pack";
 import { TikTokStrip } from "./TikTokStrip";
 
 export function ComboCard({ combo }: { combo: Combo }) {
+  const leadStops = combo.stops.slice(0, 3);
   const photos = getComboCardPhotos(combo);
   return (
     <article className="overflow-hidden rounded-[20px] bg-card">
       <TikTokStrip
-        urls={combo.tiktokUrls}
+        urls={leadStops.map((stop) => stop.tiktokUrl ?? "")}
         tones={combo.posterTones}
         photos={photos}
       />

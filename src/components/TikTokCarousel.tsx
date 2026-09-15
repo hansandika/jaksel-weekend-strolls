@@ -15,7 +15,7 @@ export function TikTokCarousel({
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
   const [autoplayOk, setAutoplayOk] = useState(true);
-  const hasEmbed = urls.some(isPlayableTikTokUrl);
+  const playable = urls.filter(isPlayableTikTokUrl);
 
   const syncActive = useCallback(() => {
     const node = scrollerRef.current;
@@ -59,13 +59,17 @@ export function TikTokCarousel({
     node.scrollTo({ left: slide.offsetLeft, behavior: "smooth" });
   };
 
+  if (playable.length === 0) {
+    return null;
+  }
+
   return (
     <section aria-label="TikTok proof">
       <div
         ref={scrollerRef}
         className="tiktok-scroll flex snap-x snap-mandatory gap-2 overflow-x-auto pb-1"
       >
-        {urls.map((url, index) => (
+        {playable.map((url, index) => (
           <CarouselSlide
             key={url}
             url={url}
@@ -75,28 +79,28 @@ export function TikTokCarousel({
           />
         ))}
       </div>
-      <div className="mt-2 flex justify-center gap-1">
-        {urls.map((url, index) => (
-          <button
-            key={`${url}-dot`}
-            type="button"
-            aria-label={`TikTok ${index + 1}`}
-            aria-current={index === active}
-            onClick={() => goTo(index)}
-            className="flex h-8 w-8 items-center justify-center"
-          >
-            <span
-              className={`block h-1.5 rounded-full transition-all ${
-                index === active ? "w-4 bg-coral" : "w-1.5 bg-cream/25"
-              }`}
-            />
-          </button>
-        ))}
-      </div>
-      <p className="text-center text-[11px] text-cream/40">
-        {hasEmbed
-          ? "Official TikTok player — muted autoplay on the visible slide. Placeholders stay posters."
-          : "Placeholder TikTok tiles — live clips replace these URLs later."}
+      {playable.length > 1 ? (
+        <div className="mt-2 flex justify-center gap-1">
+          {playable.map((url, index) => (
+            <button
+              key={`${url}-dot`}
+              type="button"
+              aria-label={`TikTok ${index + 1}`}
+              aria-current={index === active}
+              onClick={() => goTo(index)}
+              className="flex h-8 w-8 items-center justify-center"
+            >
+              <span
+                className={`block h-1.5 rounded-full transition-all ${
+                  index === active ? "w-4 bg-coral" : "w-1.5 bg-cream/25"
+                }`}
+              />
+            </button>
+          ))}
+        </div>
+      ) : null}
+      <p className="mt-1.5 text-center text-[11px] text-cream/40">
+        Muted autoplay on the visible slide. Tap the clip to open TikTok.
       </p>
     </section>
   );
@@ -118,14 +122,13 @@ function CarouselSlide({
 
   if (playable && parsed && active) {
     return (
-      <div className="h-[248px] w-[158px] shrink-0 snap-start overflow-hidden rounded-[16px] bg-[#111]">
-        <TikTokPlayer
-          videoId={parsed.videoId}
-          handle={parsed.handle}
-          autoplay={autoplay}
-          className="h-full w-full border-0"
-        />
-      </div>
+      <TikTokPlayer
+        videoId={parsed.videoId}
+        handle={parsed.handle}
+        watchUrl={parsed.url}
+        autoplay={autoplay}
+        className="h-[248px] w-[158px] shrink-0 snap-start rounded-[16px] bg-[#111]"
+      />
     );
   }
 

@@ -1,6 +1,6 @@
 import { AdminChrome } from "@/components/AdminChrome";
 import { listCandidates } from "@/lib/admin-api";
-import { getLivePack } from "@/lib/pack";
+import { isoWeekParts } from "@/lib/iso-week";
 import { QueueClient } from "./QueueClient";
 import type { QueueFilter } from "@/lib/candidate-types";
 
@@ -33,7 +33,7 @@ type QueuePageProps = {
 export default async function QueuePage({ searchParams }: QueuePageProps) {
   const params = await searchParams;
   const filter = isFilter(params.filter) ? params.filter : "all";
-  const pack = getLivePack();
+  const week = isoWeekParts();
   const { candidates, counts } = await listCandidates(
     filter === "all" ? "" : `?filter=${filter}`,
   );
@@ -41,7 +41,7 @@ export default async function QueuePage({ searchParams }: QueuePageProps) {
   return (
     <AdminChrome
       title="Candidate Queue"
-      subtitle={`Places discovery · ${pack.weekLabel} · ${areaSummary(candidates)}`}
+      subtitle={`Places discovery · ${week.weekLabel} · ${areaSummary(candidates)}`}
     >
       <QueueClient
         candidates={candidates}

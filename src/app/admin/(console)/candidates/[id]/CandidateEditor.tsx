@@ -128,8 +128,9 @@ export function CandidateEditor({ candidate }: { candidate: Candidate }) {
                   key={url}
                   videoId={parsed.videoId}
                   handle={parsed.handle}
+                  watchUrl={parsed.url}
                   autoplay
-                  className="h-[248px] w-[158px] shrink-0 rounded-[16px] border-0 bg-[#111]"
+                  className="h-[248px] w-[158px] shrink-0 rounded-[16px] bg-[#111]"
                 />
               );
             })}

@@ -2,11 +2,11 @@
 
 Weekly Sat/Sun combo itineraries for Jakarta Selatan, with TikTok proof carousels.
 
-M1 is the public hub: a static, content-driven Next.js app (hub + combo detail) seeded from a live week pack.
+The **public hub** (`/` and `/combo/[id]`) auto-assembles live combos from **Candidate Queue** rows already in Supabase (OSM / Geofabrik / HOT). Admin approve is optional — there is no approve gate for public. The old M1 dummy pack (`content/packs/2026-W38.json`, Seto / Obihiro / JDW) is **draft archive** and is not served.
 
-M2 adds a **free Candidate Queue**: OpenStreetMap Overpass discovery (not Google Places), Supabase storage, and a dark ink + coral admin UI. Discovery never auto-publishes into the weekend pack JSON.
+M2 is the **free Candidate Queue**: OpenStreetMap Overpass discovery (not Google Places), Supabase storage, and a dark ink + coral admin UI.
 
-M2.5 enriches that queue from **Geofabrik** (bulk OSM) and **HOT Indonesia POIs**, attaches **Mapillary** street photos, and plays **official TikTok embeds** when a combo URL is a real video.
+M2.5 enriches that queue from **Geofabrik** (bulk OSM) and **HOT Indonesia POIs**, attaches **Mapillary** street photos, and plays **official TikTok embeds** when a candidate has a real `tiktok.com/@…/video/…` URL.
 
 ## Run locally
 
@@ -39,29 +39,32 @@ Demo admin secret: `jaksel-m2-dev-secret`
 
 | Route | What you get |
 | --- | --- |
-| `/` | Hub — W38 badge, Jakarta Dessert Week chip, disabled AI ask bar, 4 combo cards, Sat/Sun pairing |
-| `/combo/[id]` | Combo detail — meta chips, stop roles, horizontal TikTok carousel + dots, tip, rain notes |
+| `/` | Hub — live queue combos, Sat/Sun pairing cards, disabled AI ask bar |
+| `/combo/[id]` | Combo detail — Maps-linked stops, muted TikTok carousel (tap-through), tip, rain notes |
 | `/admin` | Editor login (ADMIN_SECRET → httpOnly cookie) |
 | `/admin/queue` | Candidate Queue — counts, filters, bulk approve/reject, Mapillary thumbs |
 | `/admin/candidates/[id]` | Candidate detail — photo, OSM links, draft why/tip, status |
 | `/admin/discover` | On-demand Overpass refresh + notes for bulk import |
 
-Seeded combo ids:
+Live combo ids (assembled from queue areas, not dummy JSON):
 
-- `cafe-mall-vietnam`
-- `blok-m-food-flex`
-- `soft-sunday-cipete`
-- `rain-indoor-pi`
+- `blok-m-food` (Sat pairing — higher-energy food cluster)
+- `cipete-cafes` (Sun pairing — café / soft)
+- `tebet-stroll`
+- `scbd-senopati-light`
+- `pi-indoor`
 
 ## Content
 
-Live pack: `content/packs/2026-W38.json` (`status: "live"`).
+Public `/` and `/combo/[id]` call `assembleLivePack()` against Candidate Queue rows. Rejected and out-of-Jaksel (Alam Sutera) rows are skipped. Each public stop needs a **Mapillary** `photo_url` (or `/api/mapillary/{id}`) and an official Maps URL (`https://www.google.com/maps/search/?api=1&query=LAT,LNG`, with `query=name+area` if coords are missing). If `GOOGLE_MAPS_API_KEY` / Places Photo is in env it is preferred; otherwise Mapillary. Stops with neither photo nor Maps URL are omitted.
 
-Each combo includes `tiktokUrls[]`. If a URL looks like a real TikTok (`tiktok.com/@user/video/{id}` and is not a `@jaksel.strolls` placeholder), the **hub card** and **combo carousel** mount the official TikTok player (`player/v1` with `autoplay=1`, `muted=1`, `loop=1`, plus `music_info` / `description` on the combo slide). Hub uses a compact player (info chrome off) on the first real clip when that card is on screen. The carousel autoplays the **visible/active** slide only and unloads offscreen iframes so only one clip plays. After `onPlayerReady` the host `postMessage`s `mute` then `play` (TikTok’s player API). The iframe `allow` list is `autoplay; encrypted-media; fullscreen; picture-in-picture`. Placeholder / invalid URLs stay gradient posters.
+TikToks are real watch URLs stored on `candidates.tiktok_urls` (open-web search, not Google Maps scrape). No `@jaksel.strolls` placeholders on the public hub. If a place has no matching short, that stop is omitted or the TikTok slot is skipped.
+
+The hub card and combo carousel mount the official TikTok player (`player/v1` with `autoplay=1`, `muted=1`, `loop=1`). Hub uses a compact player on the first real clip when that card is on screen. The carousel autoplays the **visible/active** slide only and unloads offscreen iframes. After `onPlayerReady` the host `postMessage`s `mute` then `play`. Tap/click the video (or overlay) opens the TikTok watch URL — iframe chrome is `pointer-events-none` so users are not trapped. The iframe `allow` list is `autoplay; encrypted-media; fullscreen; picture-in-picture`.
 
 Muted autoplay is required by Chrome/Android. **iOS Safari** (Low Power Mode, ITP, or in-app WebViews) can still block iframe autoplay even when muted — error `onPlayerError` in that case; the tile stays tappable. Desktop Chrome usually plays muted.
 
-Hub cards show Mapillary stills when `content/photos.json` has a match, otherwise the same gradients.
+`content/packs/2026-W38.json` is leftover M1 seed (`status: "draft"`) and is not read by the hub.
 
 ## Data stack (Geofabrik + HOT + Overpass + Mapillary)
 
@@ -110,7 +113,7 @@ Overpass stays the refresh path for `/admin/discover`. Some Overpass mirrors ret
 
 RLS is on; `anon` has **no** policies (and no table grants). The Next `/admin/*` UI talks to Functions from the server using `ADMIN_SECRET`. Do not put `service_role` in the browser.
 
-M2/M2.5 does **not** scrape TikTok and does **not** write WeekendPack JSON (photos map is a separate `content/photos.json`).
+M2/M2.5 does **not** scrape Google Maps HTML or unofficial Google endpoints. TikTok watch URLs are found on the open web and stored on `candidates.tiktok_urls`. The public hub is assembled at request time from those rows (no WeekendPack JSON write).
 
 ## Env
 
@@ -120,8 +123,9 @@ See `.env.example`:
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `ADMIN_SECRET`
 - `MAPILLARY_ACCESS_TOKEN` (injected by the parent environment; skip photos with a visible error when unset)
+- `GOOGLE_MAPS_API_KEY` (optional; if present, Places Photo may be used instead of Mapillary)
 - `CLOUD_AGENT_INJECTED_SECRET_NAMES` (optional diagnostic; should include `MAPILLARY_ACCESS_TOKEN` when the parent injects it)
 
 ## Out of scope
 
-Google Places, M3 AI ask, blok-m-msme merge, auto-publish to the live pack.
+Google Places / Maps HTML scrape, M3 AI ask, blok-m-msme merge.

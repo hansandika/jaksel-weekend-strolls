@@ -8,13 +8,11 @@ type ComboPageProps = {
   params: Promise<{ id: string }>;
 };
 
-export function generateStaticParams() {
-  return getLivePack().combos.map((combo) => ({ id: combo.id }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: ComboPageProps) {
   const { id } = await params;
-  const combo = getCombo(id);
+  const combo = await getCombo(id);
   return {
     title: combo ? `${combo.title} · Jaksel Weekend Strolls` : "Combo",
   };
@@ -22,8 +20,8 @@ export async function generateMetadata({ params }: ComboPageProps) {
 
 export default async function ComboPage({ params }: ComboPageProps) {
   const { id } = await params;
-  const combo = getCombo(id);
-  const pack = getLivePack();
+  const combo = await getCombo(id);
+  const pack = await getLivePack();
 
   if (!combo) {
     notFound();
@@ -64,9 +62,11 @@ export default async function ComboPage({ params }: ComboPageProps) {
         ))}
       </div>
 
-      <div className="mt-5">
-        <TikTokCarousel urls={combo.tiktokUrls} tones={combo.posterTones} />
-      </div>
+      {combo.tiktokUrls.length > 0 ? (
+        <div className="mt-5">
+          <TikTokCarousel urls={combo.tiktokUrls} tones={combo.posterTones} />
+        </div>
+      ) : null}
 
       <section className="mt-6">
         <h2 className="mb-3 text-[16px] font-semibold tracking-[-0.02em]">
