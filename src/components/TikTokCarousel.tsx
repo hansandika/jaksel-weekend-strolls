@@ -65,22 +65,24 @@ export function TikTokCarousel({
 
   return (
     <section aria-label="TikTok proof">
-      <div
-        ref={scrollerRef}
-        className="tiktok-scroll flex snap-x snap-mandatory gap-2 overflow-x-auto pb-1"
-      >
-        {playable.map((url, index) => (
-          <CarouselSlide
-            key={url}
-            url={url}
-            tone={tones[index] ?? tones[0] ?? "#3a2f2c"}
-            active={index === active}
-            autoplay={index === active && autoplayOk}
-          />
-        ))}
+      <div className="surface rounded-[16px] px-3 py-3">
+        <div
+          ref={scrollerRef}
+          className="tiktok-scroll mx-auto flex w-fit max-w-full snap-x snap-mandatory gap-2 overflow-x-auto"
+        >
+          {playable.map((url, index) => (
+            <CarouselSlide
+              key={url}
+              url={url}
+              tone={tones[index] ?? tones[0] ?? "#3a2f2c"}
+              active={index === active}
+              autoplay={index === active && autoplayOk}
+            />
+          ))}
+        </div>
       </div>
       {playable.length > 1 ? (
-        <div className="mt-2 flex justify-center gap-1">
+        <div className="mt-1.5 flex justify-center gap-1">
           {playable.map((url, index) => (
             <button
               key={`${url}-dot`}
@@ -88,7 +90,7 @@ export function TikTokCarousel({
               aria-label={`TikTok ${index + 1}`}
               aria-current={index === active}
               onClick={() => goTo(index)}
-              className="flex h-8 w-8 items-center justify-center"
+              className="flex h-7 w-7 items-center justify-center"
             >
               <span
                 className={`block h-1.5 rounded-full transition-all ${
@@ -99,8 +101,8 @@ export function TikTokCarousel({
           ))}
         </div>
       ) : null}
-      <p className="mt-1.5 text-center text-[11px] text-cream/40">
-        Muted autoplay on the visible slide. Tap the clip to open TikTok.
+      <p className="mt-1 text-center text-[11px] text-cream/40">
+        Tap the clip to open TikTok
       </p>
     </section>
   );
@@ -127,7 +129,8 @@ function CarouselSlide({
         handle={parsed.handle}
         watchUrl={parsed.url}
         autoplay={autoplay}
-        className="h-[248px] w-[158px] shrink-0 snap-start rounded-[16px] bg-[#111]"
+        compact
+        className="h-[180px] w-[101px] shrink-0 snap-start rounded-[14px] bg-[#111]"
       />
     );
   }
@@ -137,7 +140,7 @@ function CarouselSlide({
       href={url}
       target="_blank"
       rel="noreferrer"
-      className="flex h-[248px] w-[158px] shrink-0 snap-start items-center justify-center rounded-[16px]"
+      className="flex h-[180px] w-[101px] shrink-0 snap-start items-center justify-center rounded-[14px]"
       style={{ background: tone }}
     >
       <PlayGlyph />

@@ -8,71 +8,60 @@ export function SuggestedPairing({ pack }: { pack: WeekendPack }) {
   if (!sat && !sun) return null;
 
   return (
-    <section className="mt-7">
-      <div className="mb-3">
-        <p className="text-[13px] font-semibold tracking-wide text-coral">
+    <section className="mt-5">
+      <div className="mb-2.5 flex items-end justify-between">
+        <h2 className="text-[16px] font-semibold tracking-[-0.02em] text-cream">
           Suggested pairing
-        </p>
-        <p className="mt-1 text-[13px] leading-snug text-cream/50">
-          Sat high-energy food · Sun café / soft
-        </p>
+        </h2>
+        <p className="text-[11px] text-cream/40">Sat food · Sun café</p>
       </div>
-      <div className="grid gap-3">
-        {sat ? <PairCard day="Sat" combo={sat} accent="coral" /> : null}
-        {sun ? <PairCard day="Sun" combo={sun} accent="soft" /> : null}
+      <div className="grid grid-cols-2 gap-2.5">
+        {sat ? <TicketCard day="SAT" why="Higher-energy food cluster" combo={sat} /> : null}
+        {sun ? <TicketCard day="SUN" why="Café / soft recovery" combo={sun} /> : null}
       </div>
     </section>
   );
 }
 
-function PairCard({
+function TicketCard({
   day,
+  why,
   combo,
-  accent,
 }: {
-  day: "Sat" | "Sun";
+  day: "SAT" | "SUN";
+  why: string;
   combo: Combo;
-  accent: "coral" | "soft";
 }) {
   const photo = combo.stops.find((stop) => stop.photoUrl)?.photoUrl ?? null;
-  const shell =
-    accent === "coral"
-      ? "border-coral/35 bg-gradient-to-br from-[#3a221c] to-[#26211e]"
-      : "border-cream/12 bg-gradient-to-br from-[#2a322e] to-[#26211e]";
-  const pill =
-    accent === "coral"
-      ? "bg-coral text-ink"
-      : "bg-cream/15 text-cream";
 
   return (
     <Link
       href={`/combo/${combo.id}`}
-      className={`block overflow-hidden rounded-[20px] border ${shell}`}
+      className="surface relative block aspect-[3/4] overflow-hidden rounded-[18px]"
     >
-      <div className="flex min-h-[108px]">
-        <div className="relative w-[92px] shrink-0 overflow-hidden bg-[#1f1b19]">
-          {photo ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={photo}
-              alt=""
-              className="absolute inset-0 h-full w-full object-cover"
-            />
-          ) : null}
-          <span className="absolute inset-0 bg-[#1a1614]/25" />
-        </div>
-        <div className="flex min-w-0 flex-1 flex-col justify-center px-3.5 py-3">
-          <span
-            className={`w-fit rounded-full px-2 py-[3px] text-[10px] font-semibold tracking-wide ${pill}`}
-          >
-            {day}
-          </span>
-          <p className="mt-1.5 text-[16px] font-semibold leading-snug tracking-[-0.02em] text-cream">
+      {photo ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={photo}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      ) : (
+        <span
+          className="absolute inset-0"
+          style={{ background: combo.posterTones[0] ?? "#3a2f2c" }}
+        />
+      )}
+      <span className="absolute inset-0 bg-gradient-to-t from-[#1a1614] via-[#1a1614]/50 to-[#1a1614]/10" />
+      <div className="absolute inset-0 flex flex-col justify-between p-2.5">
+        <span className="glass-pill w-fit rounded-full px-2 py-[3px] text-[10px] font-semibold tracking-[0.14em] text-cream">
+          {day}
+        </span>
+        <div>
+          <p className="text-[15px] font-semibold leading-snug tracking-[-0.02em] text-cream">
             {combo.title}
           </p>
-          <p className="mt-1 text-[12px] leading-snug text-cream/55">
-            {combo.stops.length} stops · {combo.vibe} · {combo.area}
-          </p>
+          <p className="mt-1 text-[11px] leading-snug text-cream/70">{why}</p>
         </div>
       </div>
     </Link>

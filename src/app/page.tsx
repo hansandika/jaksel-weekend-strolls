@@ -15,24 +15,21 @@ export default async function HubPage() {
       <HubHeader pack={pack} />
       <EventChip event={pack.event} />
       <AskBar pack={pack} />
+      <SuggestedPairing pack={pack} />
 
-      <section className="mt-6">
-        <div className="mb-3 flex items-end justify-between">
-          <h2 className="text-[18px] font-semibold tracking-[-0.03em] text-cream">
+      <section className="mt-5">
+        <div className="mb-2.5 flex items-end justify-between">
+          <h2 className="text-[16px] font-semibold tracking-[-0.02em] text-cream">
             This weekend
           </h2>
-          <p className="text-[13px] text-cream/45">
-            {pack.combos.length} combos
-          </p>
+          <p className="text-[11px] text-cream/40">{pack.combos.length} combos</p>
         </div>
-        <div className="space-y-4">
+        <div className="space-y-3">
           {pack.combos.map((combo) => (
             <ComboCard key={combo.id} combo={combo} />
           ))}
         </div>
       </section>
-
-      <SuggestedPairing pack={pack} />
     </main>
   );
 }

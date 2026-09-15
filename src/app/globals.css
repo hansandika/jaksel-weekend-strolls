@@ -29,7 +29,7 @@ body {
   margin: 0 auto;
   min-height: 100dvh;
   background: #1a1614;
-  padding: 22px 18px 36px;
+  padding: 18px 16px 40px;
 }
 
 .tiktok-scroll {
@@ -38,4 +38,15 @@ body {
 
 .tiktok-scroll::-webkit-scrollbar {
   display: none;
+}
+
+.surface {
+  background: var(--color-card);
+  border: 1px solid rgba(250, 247, 242, 0.08);
+}
+
+.glass-pill {
+  background: rgba(250, 247, 242, 0.1);
+  border: 1px solid rgba(250, 247, 242, 0.12);
+  backdrop-filter: blur(12px);
 }

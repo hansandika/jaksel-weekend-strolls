@@ -1,9 +1,10 @@
+import { cache } from "react";
 import { assembleLivePack } from "./assemble-pack";
 import type { Combo, WeekendPack } from "./types";
 
-export async function getLivePack(): Promise<WeekendPack> {
+export const getLivePack = cache(async (): Promise<WeekendPack> => {
   return assembleLivePack();
-}
+});
 
 export async function getCombo(id: string): Promise<Combo | undefined> {
   const pack = await getLivePack();
