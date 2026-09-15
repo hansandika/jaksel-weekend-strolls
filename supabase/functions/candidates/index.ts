@@ -75,11 +75,15 @@ Deno.serve(async (req: Request) => {
 
       if (status && STATUSES.has(status)) query = query.eq("status", status);
       if (source) query = query.eq("source", source);
-      if (filter === "cafe") query = query.contains("place_types", ["cafe"]);
-      if (filter === "food") {
-        query = query.overlaps("place_types", ["restaurant", "fast_food"]);
+      if (filter === "cafe") {
+        query = query.overlaps("place_types", ["cafe", "bakery", "ice_cream"]);
       }
-      if (filter === "mall") query = query.contains("place_types", ["mall"]);
+      if (filter === "food") {
+        query = query.overlaps("place_types", ["restaurant", "fast_food", "bar"]);
+      }
+      if (filter === "mall") {
+        query = query.overlaps("place_types", ["mall", "marketplace"]);
+      }
       if (filter === "out") query = query.contains("tags", ["out-of-jaksel"]);
       if (q) query = query.ilike("name", `%${q}%`);
       if (missingPhotos) {

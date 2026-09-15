@@ -38,6 +38,20 @@ export function isPlayableTikTokUrl(url: string): boolean {
   return true;
 }
 
-export function tiktokEmbedSrc(videoId: string): string {
-  return `https://www.tiktok.com/embed/v2/${encodeURIComponent(videoId)}`;
+export function tiktokEmbedSrc(
+  videoId: string,
+  options: { autoplay?: boolean; muted?: boolean } = {},
+): string {
+  const autoplay = Boolean(options.autoplay);
+  const muted = options.muted ?? autoplay;
+  const params = new URLSearchParams({
+    autoplay: autoplay ? "1" : "0",
+    muted: muted ? "1" : "0",
+    music_info: "1",
+    description: "1",
+  });
+  return `https://www.tiktok.com/player/v1/${encodeURIComponent(videoId)}?${params}`;
 }
+
+export const TIKTOK_IFRAME_ALLOW =
+  "autoplay; encrypted-media; fullscreen; picture-in-picture";

@@ -13,21 +13,38 @@ export function buildOverpassQuery(areaKeys: string[], placeTypes: string[]): st
   const areas = DISCOVERY_AREAS.filter((area) => areaKeys.includes(area.key));
   const types = placeTypes.length > 0
     ? placeTypes
-    : ["cafe", "restaurant", "fast_food", "mall"];
+    : ["cafe", "restaurant", "fast_food", "bakery", "ice_cream", "bar", "mall", "marketplace"];
   const clauses: string[] = [];
   for (const area of areas) {
     const [south, west, north, east] = area.bbox;
     const bbox = `(${south},${west},${north},${east})`;
     for (const type of types) {
-      if (type === "mall") {
-        clauses.push(`nwr["shop"="mall"]${bbox};`);
-        clauses.push(`nwr["shop"="department_store"]${bbox};`);
-      } else {
-        clauses.push(`nwr["amenity"="${type}"]${bbox};`);
-      }
+      clauses.push(...overpassClauses(type, bbox));
     }
   }
-  return `[out:json][timeout:45];(${clauses.join("")});out center tags;`;
+  return `[out:json][timeout:55];(${clauses.join("")});out center tags;`;
+}
+
+function overpassClauses(type: string, bbox: string): string[] {
+  switch (type) {
+    case "mall":
+      return [`nwr["shop"="mall"]${bbox};`, `nwr["shop"="department_store"]${bbox};`];
+    case "bakery":
+      return [`nwr["shop"="bakery"]${bbox};`, `nwr["shop"="pastry"]${bbox};`];
+    case "ice_cream":
+      return [`nwr["amenity"="ice_cream"]${bbox};`];
+    case "bar":
+      return [`nwr["amenity"="bar"]${bbox};`];
+    case "marketplace":
+      return [
+        `nwr["amenity"="marketplace"]${bbox};`,
+        `nwr["shop"="marketplace"]${bbox};`,
+      ];
+    case "attraction":
+      return [`nwr["tourism"="attraction"]["name"]${bbox};`];
+    default:
+      return [`nwr["amenity"="${type}"]${bbox};`];
+  }
 }
 
 export async function fetchOverpassElements(
@@ -46,7 +63,7 @@ export async function fetchOverpassElements(
             "User-Agent": OSM_USER_AGENT,
           },
           body: new URLSearchParams({ data: query }).toString(),
-          signal: AbortSignal.timeout(25000),
+          signal: AbortSignal.timeout(40000),
         });
         if (!response.ok) {
           lastError = `Overpass ${response.status} from ${endpoint}`;

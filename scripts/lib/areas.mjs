@@ -24,6 +24,12 @@ export const DISCOVERY_AREAS = [
     bbox: [-6.302, 106.768, -6.255, 106.808],
   },
   {
+    key: "scbd_senopati",
+    label: "SCBD / Senopati",
+    outOfJaksel: false,
+    bbox: [-6.234, 106.802, -6.218, 106.821],
+  },
+  {
     key: "alam_sutera",
     label: "Alam Sutera",
     outOfJaksel: true,
@@ -32,7 +38,7 @@ export const DISCOVERY_AREAS = [
 ];
 
 /** west, south, east, north — padded clip covering all discovery areas */
-export const CLIP_BBOX = [106.63, -6.31, 106.875, -6.21];
+export const CLIP_BBOX = [106.63, -6.31, 106.875, -6.205];
 
 export function areaForPoint(lat, lng) {
   for (const area of DISCOVERY_AREAS) {

@@ -61,9 +61,10 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
           npm run import:bulk
         </pre>
         <p className="mt-2 text-[12px] leading-relaxed text-cream/45">
-          Caches the PBF in <code>data/cache/</code>, clips to Jaksel + Alam
-          Sutera, upserts <code>source=geofabrik</code>, then HOT Indonesia POIs
-          as <code>source=hot</code>. Mapillary photos need{" "}
+          Caches the PBF in <code>data/cache/</code>, clips Jaksel + SCBD /
+          Senopati + Alam Sutera, upserts <code>source=geofabrik</code>, then HOT
+          Indonesia POIs as <code>source=hot</code>. Same OSM id already in the
+          queue (any source) is skipped. Mapillary photos need{" "}
           <code>MAPILLARY_ACCESS_TOKEN</code> from the parent environment.
         </p>
         <PhotoEnrichForm tokenConfigured={hasMapillaryToken} />

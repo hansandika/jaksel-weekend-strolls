@@ -61,7 +61,7 @@ export function DiscoverForm() {
                 type="checkbox"
                 name="place_types"
                 value={type.key}
-                defaultChecked
+                defaultChecked={type.defaultOn}
                 className="h-[18px] w-[18px] accent-[#ff5a3c]"
               />
               {type.label}
@@ -71,9 +71,9 @@ export function DiscoverForm() {
       </fieldset>
 
       <p className="text-[12px] leading-relaxed text-cream/45">
-        Dedupes on OSM type/id across Overpass, Geofabrik, and HOT. Existing
-        approved/rejected rows are left alone. No TikTok scrape and no
-        auto-publish to the weekend pack.
+        Dedupes on OSM type/id across Overpass, Geofabrik, and HOT (same
+        <code> source_id</code> is skipped). Existing approved/rejected rows are
+        never overwritten. No Google Maps, no TikTok scrape, no auto-publish.
       </p>
       <SubmitButton />
     </form>

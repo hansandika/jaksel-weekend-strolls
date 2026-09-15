@@ -48,15 +48,32 @@ export function buildOverpassQuery(
     const [south, west, north, east] = area.bbox;
     const bbox = `(${south},${west},${north},${east})`;
     for (const type of placeTypes) {
-      if (type === "mall") {
-        clauses.push(`nwr["shop"="mall"]${bbox};`);
-        clauses.push(`nwr["shop"="department_store"]${bbox};`);
-      } else {
-        clauses.push(`nwr["amenity"="${type}"]${bbox};`);
-      }
+      clauses.push(...overpassClauses(type, bbox));
     }
   }
-  return `[out:json][timeout:45];(${clauses.join("")});out center tags;`;
+  return `[out:json][timeout:55];(${clauses.join("")});out center tags;`;
+}
+
+function overpassClauses(type: PlaceTypeKey, bbox: string): string[] {
+  switch (type) {
+    case "mall":
+      return [`nwr["shop"="mall"]${bbox};`, `nwr["shop"="department_store"]${bbox};`];
+    case "bakery":
+      return [`nwr["shop"="bakery"]${bbox};`, `nwr["shop"="pastry"]${bbox};`];
+    case "ice_cream":
+      return [`nwr["amenity"="ice_cream"]${bbox};`];
+    case "bar":
+      return [`nwr["amenity"="bar"]${bbox};`];
+    case "marketplace":
+      return [
+        `nwr["amenity"="marketplace"]${bbox};`,
+        `nwr["shop"="marketplace"]${bbox};`,
+      ];
+    case "attraction":
+      return [`nwr["tourism"="attraction"]["name"]${bbox};`];
+    default:
+      return [`nwr["amenity"="${type}"]${bbox};`];
+  }
 }
 
 export async function fetchOverpass(query: string): Promise<OsmElement[]> {
@@ -71,7 +88,7 @@ export async function fetchOverpass(query: string): Promise<OsmElement[]> {
             "User-Agent": OSM_USER_AGENT,
           },
           body: new URLSearchParams({ data: query }).toString(),
-          signal: AbortSignal.timeout(20000),
+          signal: AbortSignal.timeout(40000),
         });
         if (!response.ok) {
           lastError = `Overpass ${response.status} from ${endpoint}`;
@@ -116,7 +133,16 @@ function placeTypesFromTags(tags: Record<string, string>): string[] {
   if (tags.amenity === "cafe") types.add("cafe");
   if (tags.amenity === "restaurant") types.add("restaurant");
   if (tags.amenity === "fast_food") types.add("fast_food");
+  if (tags.amenity === "ice_cream") types.add("ice_cream");
+  if (tags.amenity === "food_court") types.add("restaurant");
+  if (tags.amenity === "bar") types.add("bar");
+  if (tags.amenity === "marketplace" || tags.shop === "marketplace") {
+    types.add("marketplace");
+  }
   if (tags.shop === "mall" || tags.shop === "department_store") types.add("mall");
+  if (tags.shop === "bakery" || tags.shop === "pastry") types.add("bakery");
+  if (tags.shop === "confectionery" || tags.shop === "coffee") types.add("cafe");
+  if (tags.tourism === "attraction") types.add("attraction");
   return [...types];
 }
 
@@ -126,6 +152,7 @@ function extraTags(
 ): string[] {
   const list: string[] = [];
   if (area.outOfJaksel) list.push("out-of-jaksel");
+  if (tags.amenity === "bar") list.push("soft-stop");
   if (tags.cuisine) {
     for (const cuisine of tags.cuisine.split(/;|,/)) {
       const value = cuisine.trim().toLowerCase();
@@ -143,6 +170,11 @@ function extraTags(
 
 function typeLabel(types: string[]): string {
   if (types.includes("mall")) return "Mall";
+  if (types.includes("marketplace")) return "Marketplace";
+  if (types.includes("attraction")) return "Stroll stop";
+  if (types.includes("bakery")) return "Bakery";
+  if (types.includes("ice_cream")) return "Ice cream";
+  if (types.includes("bar")) return "Soft stop";
   if (types.includes("cafe")) return "Café";
   if (types.includes("fast_food")) return "Quick eat";
   if (types.includes("restaurant")) return "Restaurant";
@@ -172,6 +204,7 @@ function composeTip(types: string[], area: AreaDef): string {
       "Cipete Raya is Grab-friendly; rain turns the sidewalk into a pond.",
     tebet: "Stay in one Tebet cluster — park-side or street, not both in the rain.",
     fatmawati_pi: "Pondok Indah is the covered backup. Park once.",
+    scbd_senopati: "Keep it light — one SCBD coffee or Senopati dinner, not both.",
     alam_sutera:
       "Outside Jaksel — only use this if the week pack explicitly asks for Alam Sutera.",
   };
@@ -179,11 +212,20 @@ function composeTip(types: string[], area: AreaDef): string {
   if (types.includes("cafe")) {
     typeTips.push("Go before 11 if you need a seat / plug.");
   }
+  if (types.includes("bakery") || types.includes("ice_cream")) {
+    typeTips.push("Sweet stop — keep it short so the combo still walks.");
+  }
   if (types.includes("restaurant") || types.includes("fast_food")) {
     typeTips.push("Have a next-door backup if the line is the event.");
   }
-  if (types.includes("mall")) {
+  if (types.includes("bar")) {
+    typeTips.push("Soft last stop — one drink if the combo is still walking.");
+  }
+  if (types.includes("mall") || types.includes("marketplace")) {
     typeTips.push("Use as a rain / AC buffer between food stops.");
+  }
+  if (types.includes("attraction")) {
+    typeTips.push("Stroll beat, not a queue destination.");
   }
   return [areaTips[area.key], ...typeTips].filter(Boolean).join(" ").slice(0, 280);
 }

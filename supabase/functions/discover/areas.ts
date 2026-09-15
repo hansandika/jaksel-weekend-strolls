@@ -27,6 +27,11 @@ export const AREAS: Record<string, AreaDef> = {
     label: "Fatmawati / Pondok Indah",
     bbox: [-6.302, 106.768, -6.255, 106.808],
   },
+  scbd_senopati: {
+    key: "scbd_senopati",
+    label: "SCBD / Senopati",
+    bbox: [-6.234, 106.802, -6.218, 106.821],
+  },
   alam_sutera: {
     key: "alam_sutera",
     label: "Alam Sutera",
@@ -35,16 +40,36 @@ export const AREAS: Record<string, AreaDef> = {
   },
 };
 
-export const DEFAULT_AREA_KEYS = ["blok_m", "cipete"] as const;
+export const DEFAULT_AREA_KEYS = [
+  "blok_m",
+  "cipete",
+  "tebet",
+  "fatmawati_pi",
+  "scbd_senopati",
+] as const;
 export const ALL_AREA_KEYS = Object.keys(AREAS);
 
-export const PLACE_TYPE_KEYS = ["cafe", "restaurant", "fast_food", "mall"] as const;
+export const PLACE_TYPE_KEYS = [
+  "cafe",
+  "restaurant",
+  "fast_food",
+  "bakery",
+  "ice_cream",
+  "bar",
+  "mall",
+  "marketplace",
+  "attraction",
+] as const;
 export type PlaceTypeKey = (typeof PLACE_TYPE_KEYS)[number];
 export const DEFAULT_PLACE_TYPES: PlaceTypeKey[] = [
   "cafe",
   "restaurant",
   "fast_food",
+  "bakery",
+  "ice_cream",
+  "bar",
   "mall",
+  "marketplace",
 ];
 
 export function resolveAreas(keys: unknown): AreaDef[] {

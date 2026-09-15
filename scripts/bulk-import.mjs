@@ -134,8 +134,9 @@ async function importGeofabrik() {
   run("osmium", [
     "tags-filter",
     clipped,
-    "nwr/amenity=cafe,restaurant,fast_food,ice_cream,food_court",
-    "nwr/shop=mall,department_store,bakery,pastry,confectionery,coffee",
+    "nwr/amenity=cafe,restaurant,fast_food,ice_cream,food_court,bar,marketplace",
+    "nwr/shop=mall,department_store,bakery,pastry,confectionery,coffee,marketplace",
+    "nwr/tourism=attraction",
     "--overwrite",
     "-o",
     filtered,
@@ -186,7 +187,17 @@ async function importGeofabrik() {
   log(`geofabrik mapped ${rows.length} named stroll POIs in area boxes`);
   const stats = await ingestBatches("geofabrik", rows, {
     areas: DISCOVERY_AREAS.map((area) => area.key),
-    place_types: ["cafe", "restaurant", "fast_food", "mall"],
+    place_types: [
+      "cafe",
+      "restaurant",
+      "fast_food",
+      "bakery",
+      "ice_cream",
+      "bar",
+      "mall",
+      "marketplace",
+      "attraction",
+    ],
   });
   return stats;
 }
@@ -269,7 +280,17 @@ async function importHot() {
     log(`HOT mapped ${rows.length} stroll POIs in area boxes`);
     const stats = await ingestBatches("hot", rows, {
       areas: DISCOVERY_AREAS.map((area) => area.key),
-      place_types: ["cafe", "restaurant", "fast_food", "mall"],
+      place_types: [
+      "cafe",
+      "restaurant",
+      "fast_food",
+      "bakery",
+      "ice_cream",
+      "bar",
+      "mall",
+      "marketplace",
+      "attraction",
+    ],
     });
     return stats;
   } catch (error) {

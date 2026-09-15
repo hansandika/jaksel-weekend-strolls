@@ -1,7 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { isPlayableTikTokUrl, parseTikTokVideo, tiktokEmbedSrc } from "@/lib/tiktok";
+import {
+  TIKTOK_IFRAME_ALLOW,
+  isPlayableTikTokUrl,
+  parseTikTokVideo,
+  tiktokEmbedSrc,
+} from "@/lib/tiktok";
 import { PlayGlyph } from "./TikTokStrip";
 
 export function TikTokCarousel({
@@ -13,6 +18,7 @@ export function TikTokCarousel({
 }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
+  const [autoplayOk, setAutoplayOk] = useState(true);
   const hasEmbed = urls.some(isPlayableTikTokUrl);
 
   const syncActive = useCallback(() => {
@@ -32,6 +38,14 @@ export function TikTokCarousel({
       }
     });
     setActive(closest);
+  }, []);
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const syncMotion = () => setAutoplayOk(!media.matches);
+    syncMotion();
+    media.addEventListener("change", syncMotion);
+    return () => media.removeEventListener("change", syncMotion);
   }, []);
 
   useEffect(() => {
@@ -60,6 +74,8 @@ export function TikTokCarousel({
             key={url}
             url={url}
             tone={tones[index] ?? tones[0] ?? "#3a2f2c"}
+            active={index === active}
+            autoplay={index === active && autoplayOk}
           />
         ))}
       </div>
@@ -83,27 +99,38 @@ export function TikTokCarousel({
       </div>
       <p className="text-center text-[11px] text-cream/40">
         {hasEmbed
-          ? "Official TikTok embeds for real video URLs. Placeholders stay as posters."
+          ? "Official TikTok player — muted autoplay on the visible slide. Placeholders stay posters."
           : "Placeholder TikTok tiles — live clips replace these URLs later."}
       </p>
     </section>
   );
 }
 
-function CarouselSlide({ url, tone }: { url: string; tone: string }) {
+function CarouselSlide({
+  url,
+  tone,
+  active,
+  autoplay,
+}: {
+  url: string;
+  tone: string;
+  active: boolean;
+  autoplay: boolean;
+}) {
   const parsed = parseTikTokVideo(url);
   const playable = isPlayableTikTokUrl(url);
 
-  if (playable && parsed) {
+  if (playable && parsed && active) {
     return (
       <div className="h-[248px] w-[158px] shrink-0 snap-start overflow-hidden rounded-[16px] bg-[#111]">
         <iframe
-          src={tiktokEmbedSrc(parsed.videoId)}
+          key={`${parsed.videoId}-${autoplay ? "play" : "still"}`}
+          src={tiktokEmbedSrc(parsed.videoId, { autoplay, muted: true })}
           title={`TikTok ${parsed.handle}`}
           className="h-full w-full border-0"
-          allow="encrypted-media; fullscreen; picture-in-picture; autoplay"
+          allow={TIKTOK_IFRAME_ALLOW}
           allowFullScreen
-          loading="lazy"
+          referrerPolicy="strict-origin-when-cross-origin"
         />
       </div>
     );

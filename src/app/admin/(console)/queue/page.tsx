@@ -21,6 +21,7 @@ function areaSummary(
   if (keys.has("cipete")) labels.push("Cipete");
   if (keys.has("tebet")) labels.push("Tebet");
   if (keys.has("fatmawati_pi")) labels.push("PI");
+  if (keys.has("scbd_senopati")) labels.push("SCBD/Senopati");
   if (keys.has("alam_sutera")) labels.push("Alam Sutera");
   return labels.length > 0 ? labels.join(" + ") : "run discovery";
 }

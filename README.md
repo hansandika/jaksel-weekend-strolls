@@ -57,7 +57,11 @@ Seeded combo ids:
 
 Live pack: `content/packs/2026-W38.json` (`status: "live"`).
 
-Each combo includes `tiktokUrls[]`. If a URL looks like a real TikTok (`tiktok.com/@user/video/{id}` and is not a `@jaksel.strolls` placeholder), the combo carousel renders the **official embed iframe** so the clip can play. Placeholder / invalid URLs stay gradient posters. Hub cards show Mapillary stills when `content/photos.json` has a match, otherwise the same gradients.
+Each combo includes `tiktokUrls[]`. If a URL looks like a real TikTok (`tiktok.com/@user/video/{id}` and is not a `@jaksel.strolls` placeholder), the combo carousel mounts the **official TikTok player** (`player/v1` with `autoplay=1`, `muted=1`, `music_info=1`, `description=1`) on the **visible slide only**. Offscreen slides unload the iframe so only one clip plays. The iframe `allow` list includes `autoplay; encrypted-media; fullscreen; picture-in-picture`. Placeholder / invalid URLs stay gradient posters.
+
+Muted autoplay is required by Chrome/Android; **iOS Safari** (Low Power Mode, or some WebViews) may still wait for a tap even when muted. Hub cards are stills, not players.
+
+Hub cards show Mapillary stills when `content/photos.json` has a match, otherwise the same gradients.
 
 ## Data stack (Geofabrik + HOT + Overpass + Mapillary)
 
@@ -66,11 +70,17 @@ Hans refused paid Google Places keys. All place data is OpenStreetMap (ODbL) plu
 | Source | When | `candidates.source` |
 | --- | --- | --- |
 | **Overpass** | On-demand `/admin/discover` (and Next.js fallback if Edge IPs get HTTP 406) | `osm` |
-| **Geofabrik** | CLI bulk import of the Java extract, clipped to Jaksel + Alam Sutera | `geofabrik` |
+| **Geofabrik Java PBF** | CLI bulk import, clipped to Jaksel + SCBD/Senopati + Alam Sutera | `geofabrik` |
 | **HOT Indonesia POIs** | CLI best-effort HDX GeoJSON (skipped cleanly if the export is awkward) | `hot` |
-| **Mapillary** | Nearest image per lat/lng; stored as `photo_url` + `mapillary` jsonb | — |
+| **Mapillary** | Nearest image per lat/lng when token is injected | `photo_url` + `mapillary` jsonb |
 
-Geofabrik does not publish a Jakarta-only PBF. The bulk script downloads [Java `java-latest.osm.pbf`](https://download.geofabrik.de/asia/indonesia/java.html) (~850MB) once into `data/cache/`, clips the bbox, filters `amenity=cafe|restaurant|fast_food` plus stroll shops/malls, and upserts with stable `source_id` like `node/123`. Rows already present under any source (same OSM id) are skipped.
+**Areas** (no Google Maps): Blok M / Melawai, Cipete / Kemang, **Tebet**, **Fatmawati / Pondok Indah**, **SCBD / Senopati** (light box), **Alam Sutera** (tagged `out-of-jaksel`).
+
+**Place types** from OSM tags: `cafe`, `restaurant`, `fast_food`, `bakery` (`shop=bakery|pastry`), `ice_cream`, `bar` (soft stop), `mall` / department store, `marketplace`, and named `tourism=attraction` (opt-in on Discover; included in bulk).
+
+Dedup is on OSM `source_id` (`node/123`, `way/456`) across Overpass, Geofabrik, and HOT. Inserts are new rows only — **approved / rejected / need_tiktok rows are never overwritten**.
+
+Geofabrik does not publish a Jakarta-only PBF. The bulk script downloads [Java `java-latest.osm.pbf`](https://download.geofabrik.de/asia/indonesia/java.html) (~850MB) once into `data/cache/`, clips the bbox, filters stroll amenities/shops, and upserts with stable `source_id`. Rows already present under any source (same OSM id) are skipped.
 
 ### Bulk import
 

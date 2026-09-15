@@ -1,7 +1,12 @@
 import { saveCandidateDraft, setOneStatus } from "@/app/admin/actions";
 import type { Candidate } from "@/lib/candidate-types";
 import { candidatePhotoSrc } from "@/lib/candidate-photo";
-import { isPlayableTikTokUrl, parseTikTokVideo, tiktokEmbedSrc } from "@/lib/tiktok";
+import {
+  TIKTOK_IFRAME_ALLOW,
+  isPlayableTikTokUrl,
+  parseTikTokVideo,
+  tiktokEmbedSrc,
+} from "@/lib/tiktok";
 
 function osmHref(candidate: Candidate): string | null {
   if (!candidate.source_id) return null;
@@ -119,17 +124,21 @@ export function CandidateEditor({ candidate }: { candidate: Candidate }) {
         <section className="space-y-2">
           <p className="text-[12px] text-cream/50">TikTok embeds</p>
           <div className="flex gap-2 overflow-x-auto">
-            {playableTikToks.map((url) => {
+            {playableTikToks.map((url, index) => {
               const parsed = parseTikTokVideo(url);
               if (!parsed) return null;
               return (
                 <iframe
                   key={url}
-                  src={tiktokEmbedSrc(parsed.videoId)}
+                  src={tiktokEmbedSrc(parsed.videoId, {
+                    autoplay: index === 0,
+                    muted: true,
+                  })}
                   title={`TikTok ${parsed.handle}`}
                   className="h-[248px] w-[158px] shrink-0 rounded-[16px] border-0 bg-[#111]"
-                  allow="encrypted-media; fullscreen; picture-in-picture; autoplay"
+                  allow={TIKTOK_IFRAME_ALLOW}
                   allowFullScreen
+                  referrerPolicy="strict-origin-when-cross-origin"
                 />
               );
             })}
