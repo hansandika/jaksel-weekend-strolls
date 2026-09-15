@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { StopList } from "@/components/StopList";
 import { TikTokCarousel } from "@/components/TikTokCarousel";
-import { getLivePack } from "@/lib/pack";
+import { getComboTikTokSlides, getLivePack } from "@/lib/pack";
 
 type ComboPageProps = {
   params: Promise<{ id: string }>;
@@ -28,6 +28,7 @@ export default async function ComboPage({ params }: ComboPageProps) {
   }
 
   const chips = [combo.area, combo.duration, combo.budget, combo.vibe];
+  const slides = getComboTikTokSlides(combo);
 
   return (
     <main className="phone-shell">
@@ -58,9 +59,14 @@ export default async function ComboPage({ params }: ComboPageProps) {
         ))}
       </div>
 
-      {combo.tiktokUrls.length > 0 ? (
+      {slides.urls.length > 0 ? (
         <div className="mt-4">
-          <TikTokCarousel urls={combo.tiktokUrls} tones={combo.posterTones} />
+          <TikTokCarousel
+            urls={slides.urls}
+            photos={slides.photos}
+            tones={combo.posterTones}
+            size="page"
+          />
         </div>
       ) : null}
 

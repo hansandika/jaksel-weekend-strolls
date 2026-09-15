@@ -182,7 +182,8 @@ function score(candidate: Candidate, prefer: AreaRecipe["prefer"]): number {
 }
 
 function eligible(candidate: Candidate): boolean {
-  if (candidate.status === "rejected") return false;
+  // Public hub ignores Candidate Queue status (new / approved / need_tiktok /
+  // rejected). Approve/reject is an admin discovery tool only.
   if (candidate.area_key === "alam_sutera") return false;
   if (candidate.tags?.includes("out-of-jaksel")) return false;
   if (!hasLatLng(candidate)) return false;

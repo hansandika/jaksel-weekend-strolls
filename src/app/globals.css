@@ -34,6 +34,19 @@ body {
 
 .tiktok-scroll {
   scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+}
+
+.tiktok-slide {
+  position: relative;
+  flex: 0 0 100%;
+  width: 100%;
+  min-width: 100%;
+  height: min(70dvh, calc((min(100vw, 390px) - 32px) * 16 / 9));
+  overflow: hidden;
+  scroll-snap-align: center;
+  background: #111;
 }
 
 .tiktok-scroll::-webkit-scrollbar {

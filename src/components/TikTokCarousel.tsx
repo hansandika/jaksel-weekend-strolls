@@ -8,12 +8,18 @@ import { TikTokPlayer } from "./TikTokPlayer";
 export function TikTokCarousel({
   urls,
   tones,
+  photos,
+  size = "page",
 }: {
   urls: string[];
   tones: string[];
+  photos?: Array<string | null>;
+  size?: "page" | "hub";
 }) {
+  const rootRef = useRef<HTMLElement>(null);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
+  const [inView, setInView] = useState(false);
   const [autoplayOk, setAutoplayOk] = useState(true);
   const playable = urls.filter(isPlayableTikTokUrl);
 
@@ -50,7 +56,18 @@ export function TikTokCarousel({
     syncActive();
     node.addEventListener("scroll", syncActive, { passive: true });
     return () => node.removeEventListener("scroll", syncActive);
-  }, [syncActive]);
+  }, [syncActive, playable.length]);
+
+  useEffect(() => {
+    const node = rootRef.current;
+    if (!node) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(Boolean(entry?.isIntersecting)),
+      { threshold: 0.55 },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
 
   const goTo = (index: number) => {
     const node = scrollerRef.current;
@@ -64,41 +81,46 @@ export function TikTokCarousel({
   }
 
   return (
-    <section aria-label="TikTok proof">
-      <div className="surface rounded-[16px] px-3 py-3">
-        <div
-          ref={scrollerRef}
-          className="tiktok-scroll mx-auto flex w-fit max-w-full snap-x snap-mandatory gap-2 overflow-x-auto"
-        >
-          {playable.map((url, index) => (
-            <CarouselSlide
-              key={url}
-              url={url}
-              tone={tones[index] ?? tones[0] ?? "#3a2f2c"}
-              active={index === active}
-              autoplay={index === active && autoplayOk}
-            />
-          ))}
-        </div>
+    <section ref={rootRef} aria-label="TikTok proof">
+      <div
+        ref={scrollerRef}
+        className={`tiktok-scroll flex w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain ${
+          size === "page" ? "rounded-[16px]" : ""
+        }`}
+      >
+        {playable.map((url, index) => (
+          <CarouselSlide
+            key={`${url}-${index}`}
+            url={url}
+            tone={tones[index] ?? tones[0] ?? "#3a2f2c"}
+            photo={photos?.[index] ?? null}
+            autoplay={index === active && autoplayOk && inView}
+          />
+        ))}
       </div>
       {playable.length > 1 ? (
-        <div className="mt-1.5 flex justify-center gap-1">
-          {playable.map((url, index) => (
-            <button
-              key={`${url}-dot`}
-              type="button"
-              aria-label={`TikTok ${index + 1}`}
-              aria-current={index === active}
-              onClick={() => goTo(index)}
-              className="flex h-7 w-7 items-center justify-center"
-            >
-              <span
-                className={`block h-1.5 rounded-full transition-all ${
-                  index === active ? "w-4 bg-coral" : "w-1.5 bg-cream/25"
-                }`}
-              />
-            </button>
-          ))}
+        <div className="mt-2 flex items-center justify-center gap-2.5">
+          <div className="flex items-center gap-1">
+            {playable.map((url, index) => (
+              <button
+                key={`${url}-dot-${index}`}
+                type="button"
+                aria-label={`TikTok ${index + 1} of ${playable.length}`}
+                aria-current={index === active}
+                onClick={() => goTo(index)}
+                className="flex h-7 w-7 items-center justify-center"
+              >
+                <span
+                  className={`block h-1.5 rounded-full transition-all ${
+                    index === active ? "w-4 bg-coral" : "w-1.5 bg-cream/25"
+                  }`}
+                />
+              </button>
+            ))}
+          </div>
+          <p className="text-[11px] tabular-nums text-cream/45">
+            {active + 1} / {playable.length}
+          </p>
         </div>
       ) : null}
       <p className="mt-1 text-center text-[11px] text-cream/40">
@@ -111,39 +133,53 @@ export function TikTokCarousel({
 function CarouselSlide({
   url,
   tone,
-  active,
+  photo,
   autoplay,
 }: {
   url: string;
   tone: string;
-  active: boolean;
+  photo: string | null;
   autoplay: boolean;
 }) {
   const parsed = parseTikTokVideo(url);
-  const playable = isPlayableTikTokUrl(url);
 
-  if (playable && parsed && active) {
+  if (parsed && autoplay) {
     return (
       <TikTokPlayer
         videoId={parsed.videoId}
         handle={parsed.handle}
         watchUrl={parsed.url}
-        autoplay={autoplay}
+        autoplay
         compact
-        className="h-[180px] w-[101px] shrink-0 snap-start rounded-[14px] bg-[#111]"
+        className="tiktok-slide"
       />
     );
   }
 
   return (
     <a
-      href={url}
+      href={parsed?.url ?? url}
       target="_blank"
       rel="noreferrer"
-      className="flex h-[180px] w-[101px] shrink-0 snap-start items-center justify-center rounded-[14px]"
+      aria-label={
+        parsed ? `Open @${parsed.handle} on TikTok` : "Open on TikTok"
+      }
+      className="tiktok-slide flex items-center justify-center"
       style={{ background: tone }}
     >
-      <PlayGlyph />
+      {photo ? (
+        // Mapillary still used as the idle poster — not a Google photo CDN.
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={photo}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      ) : null}
+      <span className="absolute inset-0 bg-[#1a1614]/35" />
+      <span className="relative">
+        <PlayGlyph />
+      </span>
     </a>
   );
 }

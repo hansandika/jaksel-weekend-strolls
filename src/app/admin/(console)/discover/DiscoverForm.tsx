@@ -73,7 +73,8 @@ export function DiscoverForm() {
       <p className="text-[12px] leading-relaxed text-cream/45">
         Dedupes on OSM type/id across Overpass, Geofabrik, and HOT (same
         <code> source_id</code> is skipped). Existing approved/rejected rows are
-        never overwritten. No Google Maps, no TikTok scrape, no auto-publish.
+        never overwritten. Status is an admin discovery tool only — the public
+        hub auto-assembles without approve. No Google Maps, no TikTok scrape.
       </p>
       <SubmitButton />
     </form>
