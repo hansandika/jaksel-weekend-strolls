@@ -5,32 +5,29 @@ import { HubHeader } from "@/components/HubHeader";
 import { SuggestedPairing } from "@/components/SuggestedPairing";
 import { getLivePack } from "@/lib/pack";
 
-export default function HubPage() {
-  const pack = getLivePack();
+export const dynamic = "force-dynamic";
+
+export default async function HubPage() {
+  const pack = await getLivePack();
 
   return (
     <main className="phone-shell">
       <HubHeader pack={pack} />
       <EventChip event={pack.event} />
       <AskBar pack={pack} />
+      <SuggestedPairing pack={pack} />
 
-      <section className="mt-6">
-        <div className="mb-3 flex items-end justify-between">
-          <h2 className="text-[18px] font-semibold tracking-[-0.03em] text-cream">
-            This weekend
-          </h2>
-          <p className="text-[13px] text-cream/45">
-            {pack.combos.length} combos
-          </p>
-        </div>
-        <div className="space-y-4">
+      <section className="mt-5">
+        <h2 className="mb-2.5 text-[16px] font-semibold tracking-[-0.02em] text-cream">
+          This weekend · {pack.combos.length} stroll
+          {pack.combos.length === 1 ? "" : "s"}
+        </h2>
+        <div className="space-y-3">
           {pack.combos.map((combo) => (
             <ComboCard key={combo.id} combo={combo} />
           ))}
         </div>
       </section>
-
-      <SuggestedPairing pack={pack} />
     </main>
   );
 }
