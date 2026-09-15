@@ -57,9 +57,9 @@ Seeded combo ids:
 
 Live pack: `content/packs/2026-W38.json` (`status: "live"`).
 
-Each combo includes `tiktokUrls[]`. If a URL looks like a real TikTok (`tiktok.com/@user/video/{id}` and is not a `@jaksel.strolls` placeholder), the combo carousel mounts the **official TikTok player** (`player/v1` with `autoplay=1`, `muted=1`, `music_info=1`, `description=1`) on the **visible slide only**. Offscreen slides unload the iframe so only one clip plays. The iframe `allow` list includes `autoplay; encrypted-media; fullscreen; picture-in-picture`. Placeholder / invalid URLs stay gradient posters.
+Each combo includes `tiktokUrls[]`. If a URL looks like a real TikTok (`tiktok.com/@user/video/{id}` and is not a `@jaksel.strolls` placeholder), the **hub card** and **combo carousel** mount the official TikTok player (`player/v1` with `autoplay=1`, `muted=1`, `loop=1`, plus `music_info` / `description` on the combo slide). Hub uses a compact player (info chrome off) on the first real clip when that card is on screen. The carousel autoplays the **visible/active** slide only and unloads offscreen iframes so only one clip plays. After `onPlayerReady` the host `postMessage`s `mute` then `play` (TikTok’s player API). The iframe `allow` list is `autoplay; encrypted-media; fullscreen; picture-in-picture`. Placeholder / invalid URLs stay gradient posters.
 
-Muted autoplay is required by Chrome/Android; **iOS Safari** (Low Power Mode, or some WebViews) may still wait for a tap even when muted. Hub cards are stills, not players.
+Muted autoplay is required by Chrome/Android. **iOS Safari** (Low Power Mode, ITP, or in-app WebViews) can still block iframe autoplay even when muted — error `onPlayerError` in that case; the tile stays tappable. Desktop Chrome usually plays muted.
 
 Hub cards show Mapillary stills when `content/photos.json` has a match, otherwise the same gradients.
 

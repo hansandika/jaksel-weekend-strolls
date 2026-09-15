@@ -1,3 +1,9 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { isPlayableTikTokUrl, parseTikTokVideo } from "@/lib/tiktok";
+import { TikTokPlayer } from "./TikTokPlayer";
+
 export function PlayGlyph() {
   return (
     <span className="inline-flex items-center gap-1 text-[11px] font-medium tracking-wide text-cream/90">
@@ -24,12 +30,62 @@ export function TikTokStrip({
   tones: string[];
   photos?: Array<string | null>;
 }) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [inView, setInView] = useState(false);
+  const [autoplayOk, setAutoplayOk] = useState(true);
   const tiles = urls.slice(0, 3);
+  const firstPlayable = tiles.findIndex(isPlayableTikTokUrl);
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const syncMotion = () => setAutoplayOk(!media.matches);
+    syncMotion();
+    media.addEventListener("change", syncMotion);
+    return () => media.removeEventListener("change", syncMotion);
+  }, []);
+
+  useEffect(() => {
+    const node = rootRef.current;
+    if (!node) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(Boolean(entry?.isIntersecting)),
+      { threshold: 0.55 },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <div className="grid grid-cols-3 overflow-hidden rounded-t-[20px]">
+    <div
+      ref={rootRef}
+      className="grid grid-cols-3 overflow-hidden rounded-t-[20px]"
+    >
       {tiles.map((url, index) => {
         const photo = photos?.[index] ?? null;
+        const parsed = parseTikTokVideo(url);
+        const playHere =
+          index === firstPlayable &&
+          Boolean(parsed) &&
+          inView &&
+          autoplayOk;
+
+        if (playHere && parsed) {
+          return (
+            <div
+              key={url}
+              className="relative h-[96px] overflow-hidden bg-[#111]"
+            >
+              <TikTokPlayer
+                videoId={parsed.videoId}
+                handle={parsed.handle}
+                autoplay
+                compact
+                className="h-full w-full border-0"
+              />
+            </div>
+          );
+        }
+
         return (
           <div
             key={url}

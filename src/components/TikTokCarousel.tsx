@@ -1,13 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  TIKTOK_IFRAME_ALLOW,
-  isPlayableTikTokUrl,
-  parseTikTokVideo,
-  tiktokEmbedSrc,
-} from "@/lib/tiktok";
+import { isPlayableTikTokUrl, parseTikTokVideo } from "@/lib/tiktok";
 import { PlayGlyph } from "./TikTokStrip";
+import { TikTokPlayer } from "./TikTokPlayer";
 
 export function TikTokCarousel({
   urls,
@@ -123,14 +119,11 @@ function CarouselSlide({
   if (playable && parsed && active) {
     return (
       <div className="h-[248px] w-[158px] shrink-0 snap-start overflow-hidden rounded-[16px] bg-[#111]">
-        <iframe
-          key={`${parsed.videoId}-${autoplay ? "play" : "still"}`}
-          src={tiktokEmbedSrc(parsed.videoId, { autoplay, muted: true })}
-          title={`TikTok ${parsed.handle}`}
+        <TikTokPlayer
+          videoId={parsed.videoId}
+          handle={parsed.handle}
+          autoplay={autoplay}
           className="h-full w-full border-0"
-          allow={TIKTOK_IFRAME_ALLOW}
-          allowFullScreen
-          referrerPolicy="strict-origin-when-cross-origin"
         />
       </div>
     );
