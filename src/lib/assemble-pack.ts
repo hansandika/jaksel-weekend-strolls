@@ -32,6 +32,7 @@ type AreaRecipe = {
   budget: string;
   tags: string[];
   prefer: "food" | "cafe" | "mix";
+  format: string;
   tip: string;
   rainNotes: string;
 };
@@ -48,6 +49,7 @@ const AREA_RECIPES: AreaRecipe[] = [
     budget: "Rp120-220k",
     tags: ["viral-food", "MRT", "queue-ok"],
     prefer: "food",
+    format: "One-corridor crawl",
     tip: "Ride MRT to Blok M. Do the ramen stop before the mall pulse, then land on kopi.",
     rainNotes: "Pasaraya and Melawai shophouses are mostly covered. Skip street hops if Melawai ponds.",
   },
@@ -62,6 +64,7 @@ const AREA_RECIPES: AreaRecipe[] = [
     budget: "Rp100-180k",
     tags: ["slow", "latte", "plugs"],
     prefer: "cafe",
+    format: "One-corridor crawl",
     tip: "One drink per stop. Start at Dua or Titik Temu while Cipete Raya is still quiet.",
     rainNotes: "Grab between Cipete Raya shops if the street is ponding. Indoor seats fill first.",
   },
@@ -76,6 +79,7 @@ const AREA_RECIPES: AreaRecipe[] = [
     budget: "Rp90-180k",
     tags: ["local", "walkable", "casual"],
     prefer: "mix",
+    format: "One-corridor crawl",
     tip: "Park once near Tebet Timur. Food street first, then a sit-down if the heat spikes.",
     rainNotes: "Covered food-street awnings help. Jump to an indoor café if the canal path floods.",
   },
@@ -90,6 +94,7 @@ const AREA_RECIPES: AreaRecipe[] = [
     budget: "Rp150-280k",
     tags: ["AC", "new-coffee", "one-grab"],
     prefer: "mix",
+    format: "One-corridor crawl",
     tip: "Do Ashta first so Senopati lunch is a landing, not a second queue.",
     rainNotes: "Ashta is fully covered. Grab the one street crossing to Senopati if it sheets rain.",
   },
@@ -104,6 +109,7 @@ const AREA_RECIPES: AreaRecipe[] = [
     budget: "Rp120-220k",
     tags: ["AC", "covered", "mall"],
     prefer: "mix",
+    format: "Half-day loop",
     tip: "Park once at PIM. Stay inside the skybridge loop; do not add a Cipete hop.",
     rainNotes: "Built for rain. If parking is jammed, drop at the basement and stay inside.",
   },
@@ -243,6 +249,32 @@ function pickMix(pool: Candidate[], prefer: AreaRecipe["prefer"]): Candidate[] {
   return picked.slice(0, 4);
 }
 
+function comboStrength(combo: Combo): number {
+  const tiktoks = combo.tiktokUrls.length;
+  const photos = combo.stops.filter((stop) => stop.photoUrl).length;
+  return tiktoks * 24 + photos * 6 + combo.stops.length;
+}
+
+function finiteWeekend(
+  combos: Combo[],
+  sat?: Combo,
+  sun?: Combo,
+): Combo[] {
+  const featured: Combo[] = [];
+  if (sat) featured.push(sat);
+  if (sun && sun.id !== sat?.id) featured.push(sun);
+  const featuredIds = new Set(featured.map((combo) => combo.id));
+  const rest = combos
+    .filter((combo) => !featuredIds.has(combo.id))
+    .sort((a, b) => comboStrength(b) - comboStrength(a));
+  const picked = [...featured];
+  for (const combo of rest) {
+    if (picked.length >= 4) break;
+    picked.push(combo);
+  }
+  return picked.slice(0, 4);
+}
+
 function toStop(candidate: Candidate): Stop | null {
   const maps = googleMapsSearchUrl({
     name: candidate.name,
@@ -297,6 +329,7 @@ function comboFromRecipe(
     tiktokUrls,
     posterTones: POSTER_TONES[toneIndex % POSTER_TONES.length],
     stops,
+    format: recipe.format,
     tip: recipe.tip,
     rainNotes: recipe.rainNotes,
   };
@@ -305,18 +338,20 @@ function comboFromRecipe(
 export async function assembleLivePack(): Promise<WeekendPack> {
   const week = isoWeekParts();
   const candidates = await listAllCandidates();
-  const combos = AREA_RECIPES.map((recipe, index) =>
+  const assembled = AREA_RECIPES.map((recipe, index) =>
     comboFromRecipe(recipe, candidates, index),
   ).filter((combo): combo is Combo => Boolean(combo));
 
   const sat =
-    combos.find((combo) => combo.id === "blok-m-food") ??
-    combos.find((combo) => combo.vibe.toLowerCase().includes("food")) ??
-    combos[0];
+    assembled.find((combo) => combo.id === "blok-m-food") ??
+    assembled.find((combo) => combo.vibe.toLowerCase().includes("food")) ??
+    assembled[0];
   const sun =
-    combos.find((combo) => combo.id === "cipete-cafes" && combo.id !== sat?.id) ??
-    combos.find((combo) => combo.id !== sat?.id) ??
+    assembled.find((combo) => combo.id === "cipete-cafes" && combo.id !== sat?.id) ??
+    assembled.find((combo) => combo.id !== sat?.id) ??
     sat;
+
+  const combos = finiteWeekend(assembled, sat, sun);
 
   return {
     isoWeek: week.isoWeek,
@@ -324,7 +359,7 @@ export async function assembleLivePack(): Promise<WeekendPack> {
     status: "live",
     brand: "Jaksel",
     title: "Weekend Strolls",
-    tagline: "Live combos from the Candidate Queue.",
+    tagline: `This weekend · ${combos.length} strolls`,
     event: {
       name: "Auto-published from OSM",
       endsOn: week.isoWeek,
@@ -332,8 +367,12 @@ export async function assembleLivePack(): Promise<WeekendPack> {
       note: "Geofabrik / HOT / Overpass · Mapillary stills",
       kind: "live",
     },
-    askPlaceholder: "ask for a card — coming later",
-    askChips: ["places in Blok M", "Cipete cafés", "Tebet stroll"],
+    askPlaceholder: "Ask for a stroll — coming later",
+    askChips: [
+      "Café crawl Blok M",
+      "Soft start Senopati",
+      "Mall stroll Kemang",
+    ],
     askHint: "AI drafts later. Public hub auto-assembles from the queue.",
     pairing: {
       satComboId: sat?.id ?? "",

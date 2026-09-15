@@ -39,8 +39,8 @@ Demo admin secret: `jaksel-m2-dev-secret`
 
 | Route | What you get |
 | --- | --- |
-| `/` | Hub — live queue combos, Sat/Sun pairing cards, disabled AI ask bar |
-| `/combo/[id]` | Combo detail — Maps-linked stops, muted TikTok carousel (tap-through), tip, rain notes |
+| `/` | Hub — finite weekend pack (≤4 strolls), Sat/Sun path tickets, vibe chips that prefill Ask |
+| `/combo/[id]` | Combo detail — day math, walk-gap rows, sticky Start this stroll (Maps walking dir), muted TikTok carousel |
 | `/admin` | Editor login (ADMIN_SECRET → httpOnly cookie) |
 | `/admin/queue` | Candidate Queue — counts, filters, bulk approve/reject, Mapillary thumbs |
 | `/admin/candidates/[id]` | Candidate detail — photo, OSM links, draft why/tip, status |
@@ -61,6 +61,8 @@ Public `/` and `/combo/[id]` call `assembleLivePack()` against Candidate Queue r
 TikToks are real watch URLs stored on `candidates.tiktok_urls` (open-web search, not Google Maps scrape). No `@jaksel.strolls` placeholders on the public hub. If a place has no matching short, that stop is omitted or the TikTok slot is skipped.
 
 Hub combo cards (when a combo has TikTok URLs) and combo-detail stop TikToks share one **horizontal snap carousel**: one portrait clip per full content width (`scroll-snap-type: x mandatory`, each slide `scroll-snap-align: center`, ~390px − padding, 9:16-ish). Only the **active/visible** slide mounts the official TikTok player (`player/v1` with `autoplay=1`, `muted=1`, `loop=1`); other slides unload to a Mapillary poster. Dots plus a `1 / 3` counter sit under the track. After `onPlayerReady` the host `postMessage`s `mute` then `play`. Tap/click the video (or overlay) opens the TikTok watch URL — iframe chrome is `pointer-events-none` so users are not trapped. The iframe `allow` list is `autoplay; encrypted-media; fullscreen; picture-in-picture`.
+
+The hub is a **finite weekend pack** (pairing Sat/Sun plus up to two more strongest combos, max 4). Combo cards and the combo page show honest day math (`3 stops · ~XX min walk · Half-day loop` / `One-corridor crawl`). Walk gaps between consecutive stops use Haversine at ~4.5 km/h. **Start this stroll** opens an official Maps walking directions URL (`/dir/?api=1&travelmode=walking`) when two or more stops have coords.
 
 Muted autoplay is required by Chrome/Android. **iOS Safari** (Low Power Mode, ITP, or in-app WebViews) can still block iframe autoplay even when muted — error `onPlayerError` in that case; the tile stays tappable. Desktop Chrome usually plays muted.
 

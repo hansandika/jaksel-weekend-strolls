@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { StartStrollBar } from "@/components/StartStrollBar";
 import { StopList } from "@/components/StopList";
 import { TikTokCarousel } from "@/components/TikTokCarousel";
+import { googleMapsWalkingDirUrl } from "@/lib/maps";
 import { getComboTikTokSlides, getLivePack } from "@/lib/pack";
+import { comboDayMath } from "@/lib/walk";
 
 type ComboPageProps = {
   params: Promise<{ id: string }>;
@@ -27,11 +30,18 @@ export default async function ComboPage({ params }: ComboPageProps) {
     notFound();
   }
 
-  const chips = [combo.area, combo.duration, combo.budget, combo.vibe];
+  const math = comboDayMath(combo);
   const slides = getComboTikTokSlides(combo);
+  const startHref =
+    googleMapsWalkingDirUrl(combo.stops) ?? combo.stops[0]?.googleMapsUrl ?? "";
+  const summary = [
+    `${math.stopCount} stop${math.stopCount === 1 ? "" : "s"}`,
+    math.walkMinutes > 0 ? `~${math.walkMinutes} min walk` : null,
+    math.format,
+  ].filter((part): part is string => Boolean(part));
 
   return (
-    <main className="phone-shell">
+    <main className="phone-shell pb-0">
       <div className="flex items-center justify-between">
         <Link href="/" className="text-[13px] font-medium text-cream/70">
           ← Hub
@@ -48,13 +58,10 @@ export default async function ComboPage({ params }: ComboPageProps) {
         {combo.subtitle}
       </p>
 
-      <div className="mt-3 flex flex-wrap gap-1">
-        {chips.map((chip) => (
-          <span
-            key={chip}
-            className="glass-pill rounded-full px-2.5 py-1 text-[11px] text-cream/80"
-          >
-            {chip}
+      <div className="surface mt-3 flex flex-wrap gap-x-3 gap-y-1 rounded-[14px] px-3.5 py-2.5">
+        {summary.map((part) => (
+          <span key={part} className="text-[12px] font-medium text-cream/80">
+            {part}
           </span>
         ))}
       </div>
@@ -94,6 +101,8 @@ export default async function ComboPage({ params }: ComboPageProps) {
           {combo.rainNotes}
         </p>
       </section>
+
+      {startHref ? <StartStrollBar href={startHref} /> : null}
     </main>
   );
 }

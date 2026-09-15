@@ -25,6 +25,7 @@ export type Combo = {
   tiktokUrls: string[];
   posterTones: string[];
   stops: Stop[];
+  format: string;
   tip: string;
   rainNotes: string;
 };

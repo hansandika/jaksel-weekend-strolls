@@ -18,12 +18,10 @@ export default async function HubPage() {
       <SuggestedPairing pack={pack} />
 
       <section className="mt-5">
-        <div className="mb-2.5 flex items-end justify-between">
-          <h2 className="text-[16px] font-semibold tracking-[-0.02em] text-cream">
-            This weekend
-          </h2>
-          <p className="text-[11px] text-cream/40">{pack.combos.length} combos</p>
-        </div>
+        <h2 className="mb-2.5 text-[16px] font-semibold tracking-[-0.02em] text-cream">
+          This weekend · {pack.combos.length} stroll
+          {pack.combos.length === 1 ? "" : "s"}
+        </h2>
         <div className="space-y-3">
           {pack.combos.map((combo) => (
             <ComboCard key={combo.id} combo={combo} />
