@@ -49,6 +49,10 @@ body {
   background: #111;
 }
 
+.tiktok-scroll-page .tiktok-slide {
+  height: min(52dvh, calc((min(100vw, 390px) - 32px) * 16 / 9));
+}
+
 .tiktok-scroll::-webkit-scrollbar {
   display: none;
 }

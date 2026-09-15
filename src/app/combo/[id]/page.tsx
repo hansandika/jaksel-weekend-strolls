@@ -41,7 +41,7 @@ export default async function ComboPage({ params }: ComboPageProps) {
   ].filter((part): part is string => Boolean(part));
 
   return (
-    <main className="phone-shell pb-0">
+    <main className="phone-shell pb-24">
       <div className="flex items-center justify-between">
         <Link href="/" className="text-[13px] font-medium text-cream/70">
           ← Hub

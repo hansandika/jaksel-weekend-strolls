@@ -85,7 +85,7 @@ export function TikTokCarousel({
       <div
         ref={scrollerRef}
         className={`tiktok-scroll flex w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain ${
-          size === "page" ? "rounded-[16px]" : ""
+          size === "page" ? "tiktok-scroll-page rounded-[16px]" : ""
         }`}
       >
         {playable.map((url, index) => (
