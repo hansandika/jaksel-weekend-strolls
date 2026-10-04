@@ -29,13 +29,41 @@ body {
   margin: 0 auto;
   min-height: 100dvh;
   background: #1a1614;
-  padding: 22px 18px 36px;
+  padding: 18px 16px 40px;
 }
 
 .tiktok-scroll {
   scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+}
+
+.tiktok-slide {
+  position: relative;
+  flex: 0 0 100%;
+  width: 100%;
+  min-width: 100%;
+  height: min(70dvh, calc((min(100vw, 390px) - 32px) * 16 / 9));
+  overflow: hidden;
+  scroll-snap-align: center;
+  background: #111;
+}
+
+.tiktok-scroll-page .tiktok-slide {
+  height: min(52dvh, calc((min(100vw, 390px) - 32px) * 16 / 9));
 }
 
 .tiktok-scroll::-webkit-scrollbar {
   display: none;
+}
+
+.surface {
+  background: var(--color-card);
+  border: 1px solid rgba(250, 247, 242, 0.08);
+}
+
+.glass-pill {
+  background: rgba(250, 247, 242, 0.1);
+  border: 1px solid rgba(250, 247, 242, 0.12);
+  backdrop-filter: blur(12px);
 }

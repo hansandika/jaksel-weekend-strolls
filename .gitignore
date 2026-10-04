@@ -32,6 +32,13 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
+
+# OSM / HOT bulk-import cache
+/data/cache/**
+!/data/cache/.gitkeep
+*.osm.pbf
+*.geojsonseq
 
 # vercel
 .vercel

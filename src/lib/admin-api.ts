@@ -1,0 +1,177 @@
+import type {
+  Candidate,
+  CandidateCounts,
+  DiscoveryRun,
+} from "./candidate-types";
+
+const FUNCTIONS_URL = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1`;
+
+function adminHeaders(): HeadersInit {
+  const secret = process.env.ADMIN_SECRET;
+  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!secret || !anon || !process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    throw new Error("Missing ADMIN_SECRET or Supabase public env");
+  }
+  return {
+    "Content-Type": "application/json",
+    "x-admin-secret": secret,
+    apikey: anon,
+    Authorization: `Bearer ${anon}`,
+  };
+}
+
+async function adminFetch<T>(
+  fn: "discover" | "candidates",
+  init?: RequestInit & { search?: string; timeoutMs?: number },
+): Promise<T> {
+  const { search, timeoutMs, ...requestInit } = init ?? {};
+  const url = `${FUNCTIONS_URL}/${fn}${search ?? ""}`;
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...requestInit,
+      headers: { ...adminHeaders(), ...requestInit.headers },
+      cache: "no-store",
+      signal: requestInit.signal ?? (timeoutMs ? AbortSignal.timeout(timeoutMs) : undefined),
+    });
+  } catch (error) {
+    const timedOut =
+      error instanceof Error &&
+      (error.name === "TimeoutError" || error.name === "AbortError");
+    throw new Error(
+      timedOut ? `Edge ${fn} timed out` : error instanceof Error ? error.message : `Edge ${fn} failed`,
+    );
+  }
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const message =
+      typeof payload.error === "string" ? payload.error : `Edge ${fn} ${response.status}`;
+    throw new Error(message);
+  }
+  return payload as T;
+}
+
+export async function listCandidates(search = ""): Promise<{
+  candidates: Candidate[];
+  counts: CandidateCounts;
+}> {
+  return adminFetch("candidates", { search });
+}
+
+export async function listAllCandidates(): Promise<Candidate[]> {
+  const all: Candidate[] = [];
+  const limit = 1000;
+  let offset = 0;
+  for (let page = 0; page < 6; page += 1) {
+    const { candidates } = await listCandidates(
+      `?limit=${limit}&offset=${offset}`,
+    );
+    all.push(...candidates);
+    if (candidates.length < limit) break;
+    offset += limit;
+  }
+  return all;
+}
+
+export async function getCandidate(id: string): Promise<Candidate> {
+  const payload = await adminFetch<{ candidate: Candidate }>("candidates", {
+    search: `?id=${encodeURIComponent(id)}`,
+  });
+  return payload.candidate;
+}
+
+export async function setCandidateStatus(ids: string[], status: string) {
+  return adminFetch<{ updated: number }>("candidates", {
+    method: "POST",
+    body: JSON.stringify({ action: "set_status", ids, status }),
+  });
+}
+
+export async function updateCandidate(
+  id: string,
+  patch: {
+    draft_why?: string;
+    draft_tip?: string;
+    status?: string;
+    tiktok_urls?: string[];
+  },
+) {
+  return adminFetch<{ candidate: Candidate }>("candidates", {
+    method: "POST",
+    body: JSON.stringify({ action: "update", id, ...patch }),
+  });
+}
+
+export async function listDiscoveryRuns(): Promise<DiscoveryRun[]> {
+  const payload = await adminFetch<{ runs: DiscoveryRun[] }>("discover");
+  return payload.runs ?? [];
+}
+
+export async function runDiscovery(
+  areas: string[],
+  placeTypes: string[],
+  elements?: unknown[],
+) {
+  return adminFetch<{
+    run: DiscoveryRun;
+    found: number;
+    inserted: number;
+    skipped: number;
+    source: string;
+  }>("discover", {
+    method: "POST",
+    body: JSON.stringify({
+      areas,
+      place_types: placeTypes,
+      ...(elements ? { elements } : {}),
+    }),
+  });
+}
+
+export async function ingestCandidates(
+  source: string,
+  rows: Array<Record<string, unknown>>,
+  extra?: { log_run?: boolean; areas?: string[]; place_types?: string[] },
+) {
+  return adminFetch<{
+    source: string;
+    found: number;
+    inserted: number;
+    skipped: number;
+  }>("candidates", {
+    method: "POST",
+    body: JSON.stringify({
+      action: "ingest",
+      source,
+      rows,
+      ...extra,
+    }),
+  });
+}
+
+export async function setCandidatePhotos(
+  updates: Array<{
+    id: string;
+    photo_url: string;
+    photo_urls: string[];
+    mapillary: Record<string, unknown>;
+  }>,
+) {
+  return adminFetch<{ updated: number }>("candidates", {
+    method: "POST",
+    body: JSON.stringify({ action: "set_photos", updates }),
+  });
+}
+
+export async function fetchCandidatePhotos(limit = 40) {
+  return adminFetch<{
+    skipped?: boolean;
+    looked?: number;
+    updated: number;
+    error?: string;
+  }>("candidates", {
+    method: "POST",
+    body: JSON.stringify({ action: "fetch_photos", limit }),
+    timeoutMs: 15_000,
+  });
+}

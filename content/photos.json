@@ -1,0 +1,20 @@
+{
+  "updatedAt": "2026-09-14T19:13:55.036Z",
+  "byStopName": {
+    "Dua Coffee Cipete": {
+      "imageId": "936720891156768",
+      "photoUrl": "/api/mapillary/936720891156768",
+      "candidateName": "Dua Coffee @Cipete"
+    },
+    "Pondok Indah Mall": {
+      "imageId": "267425596330590",
+      "photoUrl": "/api/mapillary/267425596330590",
+      "candidateName": "Pondok Indah Mall 3"
+    },
+    "BANSAN / Ayam Presto": {
+      "imageId": "401515812310796",
+      "photoUrl": "/api/mapillary/401515812310796",
+      "candidateName": "Ayam Presto"
+    }
+  }
+}

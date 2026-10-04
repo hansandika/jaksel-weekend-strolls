@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start --hostname 0.0.0.0 --port 3000",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "import:bulk": "node scripts/bulk-import.mjs",
+    "import:photos": "node scripts/bulk-import.mjs --photos-only"
   },
   "dependencies": {
     "next": "^15.5.25",
