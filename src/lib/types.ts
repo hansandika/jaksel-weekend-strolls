@@ -1,5 +1,11 @@
 export type PackStatus = "live" | "draft";
 
+export type HoursHint = {
+  spec: string;
+  label: string;
+  open: boolean | null;
+};
+
 export type Stop = {
   candidateId?: string;
   name: string;
@@ -11,6 +17,7 @@ export type Stop = {
   googleMapsUrl: string;
   photoUrl: string | null;
   tiktokUrl: string | null;
+  hoursHint?: HoursHint | null;
 };
 
 export type Combo = {
@@ -28,6 +35,8 @@ export type Combo = {
   format: string;
   tip: string;
   rainNotes: string;
+  rainSwapId?: string | null;
+  rainSwapTitle?: string | null;
 };
 
 export type WeekendEvent = {
@@ -58,5 +67,6 @@ export type WeekendPack = {
   askChips: string[];
   askHint: string;
   pairing: SuggestedPairing;
+  featuredIds: string[];
   combos: Combo[];
 };

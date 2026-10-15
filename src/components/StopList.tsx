@@ -17,7 +17,9 @@ export function StopList({ stops }: { stops: Stop[] }) {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={stop.photoUrl}
-                    alt=""
+                    alt={`Street photo of ${stop.name}`}
+                    width={56}
+                    height={56}
                     className="h-full w-full object-cover"
                   />
                 ) : null}
@@ -35,6 +37,19 @@ export function StopList({ stops }: { stops: Stop[] }) {
                   </span>
                 </div>
                 <p className="mt-0.5 text-[11px] text-cream/45">{stop.area}</p>
+                {stop.hoursHint ? (
+                  <p
+                    className={`mt-1 text-[11px] font-medium ${
+                      stop.hoursHint.open === true
+                        ? "text-[#8fce9a]"
+                        : stop.hoursHint.open === false
+                          ? "text-cream/40"
+                          : "text-cream/55"
+                    }`}
+                  >
+                    {stop.hoursHint.label}
+                  </p>
+                ) : null}
               </div>
             </div>
             {stop.note ? (

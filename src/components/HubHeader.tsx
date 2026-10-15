@@ -1,7 +1,8 @@
 import type { WeekendPack } from "@/lib/types";
+import { getHubCombos } from "@/lib/pack";
 
 export function HubHeader({ pack }: { pack: WeekendPack }) {
-  const strollCount = pack.combos.length;
+  const strollCount = getHubCombos(pack).length;
 
   return (
     <header className="relative pr-16">

@@ -12,8 +12,7 @@ M2.5 enriches that queue from **Geofabrik** (bulk OSM) and **HOT Indonesia POIs*
 
 ```bash
 cp .env.example .env.local
-# set NEXT_PUBLIC_SUPABASE_ANON_KEY + ADMIN_SECRET
-# MAPILLARY_ACCESS_TOKEN — parent Cloud Agent injects this; never commit it
+# fill every name listed in .env.example — never commit real values
 npm install
 npm run dev
 ```
@@ -33,14 +32,14 @@ Phone testing from this environment uses a Cloudflare quick tunnel:
 cloudflared tunnel --url http://localhost:3000
 ```
 
-Demo admin secret: `jaksel-m2-dev-secret`
+Local admin login uses `ADMIN_SECRET` from `.env.local` (not committed).
 
 ## Routes
 
 | Route | What you get |
 | --- | --- |
-| `/` | Hub — finite weekend pack (≤4 strolls), Sat/Sun path tickets, vibe chips that prefill Ask |
-| `/combo/[id]` | Combo detail — day math, walk-gap rows, sticky Start this stroll (Maps walking dir), muted TikTok carousel |
+| `/` | Hub — finite weekend pack (≤4 strolls), Sat/Sun path tickets, vibe chips, saved strolls |
+| `/combo/[id]` | Combo detail — day math, hours hints, walk gaps, Save/Share, rain swap, sticky Maps start, TikTok carousel |
 | `/admin` | Editor login (ADMIN_SECRET → httpOnly cookie) |
 | `/admin/queue` | Candidate Queue — counts, filters, bulk approve/reject, Mapillary thumbs |
 | `/admin/candidates/[id]` | Candidate detail — photo, OSM links, draft why/tip, status |
@@ -119,14 +118,18 @@ M2/M2.5 does **not** scrape Google Maps HTML or unofficial Google endpoints. Tik
 
 ## Env
 
-See `.env.example`:
+See `.env.example` (names only). **Vercel** (Project Settings → Environment Variables) needs:
 
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `ADMIN_SECRET`
-- `MAPILLARY_ACCESS_TOKEN` (injected by the parent environment; skip photos with a visible error when unset)
-- `GOOGLE_MAPS_API_KEY` (optional; if present, Places Photo may be used instead of Mapillary)
-- `CLOUD_AGENT_INJECTED_SECRET_NAMES` (optional diagnostic; should include `MAPILLARY_ACCESS_TOKEN` when the parent injects it)
+| Name | Where | Required |
+| --- | --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | Public (browser + server) | Yes — live hub |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public | Yes — live hub |
+| `NEXT_PUBLIC_SITE_URL` | Public | No — OG/canonical; falls back to `VERCEL_URL` |
+| `ADMIN_SECRET` | Server-only | Yes — public assemble (Edge `x-admin-secret`) and `/admin` |
+| `MAPILLARY_ACCESS_TOKEN` | Server-only | No — photo proxy; hub works if `photo_url` already stored |
+| `GOOGLE_MAPS_API_KEY` | Server-only | No — unused unless a Places photo URL is already on the row |
+
+`npm run build` does not call the queue. Missing env at **runtime** degrades `/` to an empty weekend pack instead of crashing.
 
 ## Out of scope
 

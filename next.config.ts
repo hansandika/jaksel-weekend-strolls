@@ -2,8 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  // Phone testing uses a Cloudflare quick tunnel. next dev blocks /_next/*
-  // from that origin unless it is allowlisted (the overlay Hans hit).
+  // Dev-only: next dev blocks /_next/* from Cloudflare quick tunnels unless
+  // allowlisted. Harmless on Vercel production (`next start` ignores this).
   allowedDevOrigins: ["*.trycloudflare.com"],
 };
 

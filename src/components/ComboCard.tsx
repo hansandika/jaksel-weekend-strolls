@@ -4,6 +4,7 @@ import { displayLabel } from "@/lib/labels";
 import { getComboTikTokSlides } from "@/lib/pack";
 import { comboDayMath } from "@/lib/walk";
 import { ComboHero } from "./ComboHero";
+import { SaveStrollButton } from "./SaveStrollButton";
 import { TikTokCarousel } from "./TikTokCarousel";
 
 export function ComboCard({ combo }: { combo: Combo }) {
@@ -52,13 +53,14 @@ export function ComboCard({ combo }: { combo: Combo }) {
           {title}
         </ComboHero>
       )}
-      <div className="px-3 pb-3 pt-2.5">
+      <div className="flex items-center gap-2 px-3 pb-3 pt-2.5">
         <Link
           href={`/combo/${combo.id}`}
-          className="flex h-11 items-center justify-center rounded-[12px] bg-coral text-[15px] font-semibold text-ink"
+          className="flex h-11 flex-1 items-center justify-center rounded-[12px] bg-coral text-[15px] font-semibold text-ink"
         >
           Open stroll
         </Link>
+        <SaveStrollButton id={combo.id} title={combo.title} compact />
       </div>
     </article>
   );
