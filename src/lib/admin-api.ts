@@ -4,6 +4,14 @@ import type {
   DiscoveryRun,
 } from "./candidate-types";
 
+export function hasQueueEnv(): boolean {
+  return Boolean(
+    process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() &&
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() &&
+      process.env.ADMIN_SECRET?.trim(),
+  );
+}
+
 const FUNCTIONS_URL = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1`;
 
 function adminHeaders(): HeadersInit {

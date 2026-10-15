@@ -16,6 +16,13 @@ export function formatComboMeta(combo: Combo): string {
   return `${combo.vibe} · ${combo.duration} · ${combo.area} · ${combo.budget}`;
 }
 
+export function getHubCombos(pack: WeekendPack): Combo[] {
+  if (pack.featuredIds.length === 0) return pack.combos.slice(0, 4);
+  return pack.featuredIds
+    .map((id) => pack.combos.find((combo) => combo.id === id))
+    .filter((combo): combo is Combo => Boolean(combo));
+}
+
 export function getComboCardPhotos(combo: Combo): Array<string | null> {
   return [0, 1, 2].map(
     (index) => combo.stops[index]?.photoUrl ?? combo.stops[0]?.photoUrl ?? null,

@@ -1,10 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import { SaveStrollButton } from "@/components/SaveStrollButton";
+import { ShareStrollButton } from "@/components/ShareStrollButton";
 import { StartStrollBar } from "@/components/StartStrollBar";
 import { StopList } from "@/components/StopList";
 import { TikTokCarousel } from "@/components/TikTokCarousel";
 import { googleMapsWalkingDirUrl } from "@/lib/maps";
 import { getComboTikTokSlides, getLivePack } from "@/lib/pack";
+import { getSiteUrl } from "@/lib/site-url";
 import { comboDayMath } from "@/lib/walk";
 
 type ComboPageProps = {
@@ -13,12 +17,30 @@ type ComboPageProps = {
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata({ params }: ComboPageProps) {
+export async function generateMetadata({
+  params,
+}: ComboPageProps): Promise<Metadata> {
   const { id } = await params;
-  const combo = (await getLivePack()).combos.find((item) => item.id === id);
-  return {
-    title: combo ? `${combo.title} · Jaksel Weekend Strolls` : "Combo",
-  };
+  try {
+    const pack = await getLivePack();
+    const combo = pack.combos.find((item) => item.id === id);
+    if (!combo) return { title: "Stroll" };
+    const math = comboDayMath(combo);
+    const title = combo.title;
+    const description = `${math.line}. ${combo.subtitle}`;
+    return {
+      title,
+      description,
+      openGraph: {
+        title,
+        description,
+        url: `${getSiteUrl()}/combo/${combo.id}`,
+        type: "website",
+      },
+    };
+  } catch {
+    return { title: "Stroll" };
+  }
 }
 
 export default async function ComboPage({ params }: ComboPageProps) {
@@ -39,16 +61,25 @@ export default async function ComboPage({ params }: ComboPageProps) {
     math.walkMinutes > 0 ? `~${math.walkMinutes} min walk` : null,
     math.format,
   ].filter((part): part is string => Boolean(part));
+  const shareText = `${math.line} · ${combo.area}`;
 
   return (
-    <main className="phone-shell pb-24">
-      <div className="flex items-center justify-between">
+    <main id="main" className="phone-shell pb-24">
+      <div className="flex items-center justify-between gap-2">
         <Link href="/" className="text-[13px] font-medium text-cream/70">
           ← Hub
         </Link>
-        <span className="glass-pill rounded-full px-2.5 py-[5px] text-[11px] font-semibold tracking-wide text-cream">
-          {pack.weekLabel}
-        </span>
+        <div className="flex items-center gap-1.5">
+          <SaveStrollButton id={combo.id} title={combo.title} />
+          <ShareStrollButton
+            title={combo.title}
+            text={shareText}
+            path={`/combo/${combo.id}`}
+          />
+          <span className="glass-pill rounded-full px-2.5 py-[5px] text-[11px] font-semibold tracking-wide text-cream">
+            {pack.weekLabel}
+          </span>
+        </div>
       </div>
 
       <h1 className="mt-4 text-[26px] font-semibold leading-[1.12] tracking-[-0.035em] text-cream">
@@ -100,6 +131,14 @@ export default async function ComboPage({ params }: ComboPageProps) {
         <p className="mt-1 text-[13px] leading-relaxed text-cream/80">
           {combo.rainNotes}
         </p>
+        {combo.rainSwapId && combo.rainSwapTitle ? (
+          <Link
+            href={`/combo/${combo.rainSwapId}`}
+            className="mt-2.5 flex h-10 items-center justify-center rounded-[12px] bg-cream/[0.08] text-[13px] font-semibold text-coral"
+          >
+            Raining? Swap to {combo.rainSwapTitle}
+          </Link>
+        ) : null}
       </section>
 
       {startHref ? <StartStrollBar href={startHref} /> : null}
