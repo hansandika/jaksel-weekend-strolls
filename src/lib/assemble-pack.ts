@@ -191,6 +191,7 @@ function score(candidate: Candidate, prefer: AreaRecipe["prefer"]): number {
     if (kind === "mall") value += 8;
   }
   if (candidate.draft_why) value += 4;
+  if (openingHoursFromCandidate(candidate)) value += 10;
   return value;
 }
 
@@ -253,7 +254,29 @@ function pickMix(pool: Candidate[], prefer: AreaRecipe["prefer"]): Candidate[] {
     if (extra && picked.length < 4) tryAdd(extra);
   }
 
-  return picked.slice(0, 4);
+  return preferHours(picked.slice(0, 4), ranked);
+}
+
+function preferHours(picked: Candidate[], ranked: Candidate[]): Candidate[] {
+  const hasHours = (candidate: Candidate) =>
+    Boolean(openingHoursFromCandidate(candidate));
+  if (picked.filter(hasHours).length >= 2) return picked;
+  const extras = ranked.filter(
+    (candidate) => hasHours(candidate) && !picked.includes(candidate),
+  );
+  const next = [...picked];
+  for (const extra of extras) {
+    if (next.filter(hasHours).length >= 2) break;
+    let swapAt = next.findIndex(
+      (candidate) => !hasHours(candidate) && !realTikTok(candidate),
+    );
+    if (swapAt < 0) {
+      swapAt = next.findIndex((candidate) => !hasHours(candidate));
+    }
+    if (swapAt < 0) break;
+    next[swapAt] = extra;
+  }
+  return next;
 }
 
 function comboStrength(combo: Combo): number {
