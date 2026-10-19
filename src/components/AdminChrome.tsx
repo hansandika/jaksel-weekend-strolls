@@ -11,7 +11,7 @@ export function AdminChrome({
   children: React.ReactNode;
 }) {
   return (
-    <main className="phone-shell">
+    <main className="phone-shell admin-shell">
       <div className="flex items-center justify-between">
         <p className="text-[13px] font-medium text-coral">Editor</p>
         <div className="flex items-center gap-3 text-[12px] text-cream/45">

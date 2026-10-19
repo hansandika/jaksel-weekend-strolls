@@ -4,7 +4,13 @@ import Link from "next/link";
 import { useSavedStrolls } from "@/lib/saved-strolls";
 import type { Combo } from "@/lib/types";
 
-export function SavedStrolls({ combos }: { combos: Combo[] }) {
+export function SavedStrolls({
+  combos,
+  className = "",
+}: {
+  combos: Combo[];
+  className?: string;
+}) {
   const { ids, ready } = useSavedStrolls();
   if (!ready) return null;
   const items = ids
@@ -13,7 +19,7 @@ export function SavedStrolls({ combos }: { combos: Combo[] }) {
   if (items.length === 0) return null;
 
   return (
-    <section className="mt-5" aria-label="Saved strolls">
+    <section className={`mt-5 ${className}`} aria-label="Saved strolls">
       <h2 className="mb-2.5 text-[16px] font-semibold tracking-[-0.02em] text-cream">
         Saved
       </h2>
@@ -22,7 +28,7 @@ export function SavedStrolls({ combos }: { combos: Combo[] }) {
           <li key={combo.id}>
             <Link
               href={`/combo/${combo.id}`}
-              className="surface flex items-center justify-between rounded-[14px] px-3.5 py-3"
+              className="surface hover-lift flex items-center justify-between rounded-[14px] px-3.5 py-3"
             >
               <span className="min-w-0">
                 <span className="block text-[14px] font-semibold text-cream">

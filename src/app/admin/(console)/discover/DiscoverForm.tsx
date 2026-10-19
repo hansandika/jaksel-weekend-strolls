@@ -13,7 +13,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="flex h-11 w-full items-center justify-center rounded-[12px] bg-coral text-[15px] font-semibold text-ink disabled:opacity-60"
+      className="hover-bright flex h-11 w-full items-center justify-center rounded-[12px] bg-coral text-[15px] font-semibold text-ink disabled:opacity-60 md:max-w-sm"
     >
       {pending ? "Querying OpenStreetMap…" : "Run OSM discovery"}
     </button>
@@ -25,7 +25,7 @@ export function DiscoverForm() {
     <form action={startDiscovery} className="mt-5 space-y-5">
       <fieldset>
         <legend className="text-[13px] font-semibold text-cream">Areas</legend>
-        <div className="mt-2 space-y-2">
+        <div className="mt-2 space-y-2 md:grid md:grid-cols-2 md:gap-2 md:space-y-0">
           {DISCOVERY_AREAS.map((area) => (
             <label
               key={area.key}
@@ -51,7 +51,7 @@ export function DiscoverForm() {
         <legend className="text-[13px] font-semibold text-cream">
           Place types
         </legend>
-        <div className="mt-2 space-y-2">
+        <div className="mt-2 space-y-2 md:grid md:grid-cols-2 md:gap-2 md:space-y-0">
           {DISCOVERY_PLACE_TYPES.map((type) => (
             <label
               key={type.key}

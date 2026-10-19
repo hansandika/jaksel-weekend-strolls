@@ -20,7 +20,7 @@ export default async function AdminLoginPage({ searchParams }: LoginPageProps) {
   if (authed) redirect("/admin/queue");
 
   return (
-    <main className="phone-shell">
+    <main className="phone-shell admin-shell">
       <p className="text-[13px] font-medium text-coral">Editor</p>
       <h1 className="mt-1.5 text-[28px] font-semibold leading-[1.15] tracking-[-0.035em] text-cream">
         Candidate Queue
@@ -33,7 +33,7 @@ export default async function AdminLoginPage({ searchParams }: LoginPageProps) {
         .
       </p>
 
-      <form action={loginAdmin} className="mt-8 space-y-3">
+      <form action={loginAdmin} className="mt-8 space-y-3 md:max-w-md">
         <input type="hidden" name="next" value={params.next || "/admin/queue"} />
         <label className="block text-[12px] text-cream/50" htmlFor="secret">
           Admin secret
@@ -52,7 +52,7 @@ export default async function AdminLoginPage({ searchParams }: LoginPageProps) {
         ) : null}
         <button
           type="submit"
-          className="flex h-11 w-full items-center justify-center rounded-[12px] bg-coral text-[15px] font-semibold text-ink"
+          className="hover-bright flex h-11 w-full items-center justify-center rounded-[12px] bg-coral text-[15px] font-semibold text-ink"
         >
           Enter
         </button>

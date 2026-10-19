@@ -8,11 +8,11 @@ export function AskBar({ pack }: { pack: WeekendPack }) {
   const [value, setValue] = useState("");
 
   return (
-    <section className="mt-3" aria-label="Ask for a stroll, coming soon">
+    <section className="mt-3 lg:mt-0" aria-label="Ask for a stroll, coming soon">
       <p className="mb-1.5 text-[11px] font-semibold tracking-wide text-cream/45">
         Vibe
       </p>
-      <div className="tiktok-scroll -mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1">
+      <div className="tiktok-scroll -mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 md:mx-0 md:flex-wrap md:overflow-visible md:px-0">
         {pack.askChips.map((chip) => {
           const active = value === chip;
           return (
@@ -21,7 +21,7 @@ export function AskBar({ pack }: { pack: WeekendPack }) {
               type="button"
               onClick={() => setValue(chip)}
               aria-pressed={active}
-              className={`shrink-0 rounded-full px-3 py-1.5 text-[12px] font-medium ${
+              className={`hover-bright shrink-0 rounded-full px-3 py-1.5 text-[12px] font-medium ${
                 active
                   ? "bg-coral text-ink"
                   : "border border-cream/10 bg-cream/[0.05] text-cream/80"
@@ -32,7 +32,7 @@ export function AskBar({ pack }: { pack: WeekendPack }) {
           );
         })}
       </div>
-      <div className="surface mt-2 flex h-11 items-center gap-2 rounded-full py-1 pl-4 pr-1">
+      <div className="surface mt-2 flex h-11 items-center gap-2 rounded-full py-1 pl-4 pr-1 focus-within:border-coral/70">
         <label className="sr-only" htmlFor="ask-input">
           Ask for a stroll
         </label>

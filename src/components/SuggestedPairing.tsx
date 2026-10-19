@@ -9,14 +9,14 @@ export function SuggestedPairing({ pack }: { pack: WeekendPack }) {
   if (!sat && !sun) return null;
 
   return (
-    <section className="mt-5">
+    <section className="mt-5 lg:mt-0">
       <div className="mb-2.5 flex items-end justify-between">
-        <h2 className="text-[16px] font-semibold tracking-[-0.02em] text-cream">
+        <h2 className="text-[16px] font-semibold tracking-[-0.02em] text-cream lg:text-[20px]">
           Sat vs Sun
         </h2>
         <p className="text-[11px] text-cream/40">Pick a path ticket</p>
       </div>
-      <div className="grid grid-cols-2 gap-2.5">
+      <div className="grid grid-cols-2 gap-2.5 lg:gap-4">
         {sat ? (
           <TicketCard day="SAT" why="Higher-energy food cluster" combo={sat} />
         ) : null}
@@ -43,14 +43,14 @@ function TicketCard({
   return (
     <Link
       href={`/combo/${combo.id}`}
-      className="surface relative block aspect-[3/4] overflow-hidden rounded-[18px]"
+      className="surface media-card hover-lift relative block aspect-[3/4] overflow-hidden rounded-[18px] lg:aspect-auto lg:h-[240px] xl:h-[280px]"
     >
       {photo ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={photo}
           alt=""
-          className="absolute inset-0 h-full w-full object-cover"
+          className="media-zoom absolute inset-0 h-full w-full object-cover"
         />
       ) : (
         <span

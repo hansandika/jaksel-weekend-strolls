@@ -12,7 +12,7 @@ export default function ComboNotFound() {
       </p>
       <Link
         href="/"
-        className="mt-5 flex h-11 items-center justify-center rounded-[12px] bg-coral text-[15px] font-semibold text-ink"
+        className="hover-bright mt-5 flex h-11 items-center justify-center rounded-[12px] bg-coral text-[15px] font-semibold text-ink md:w-fit md:px-5"
       >
         Back to hub
       </Link>

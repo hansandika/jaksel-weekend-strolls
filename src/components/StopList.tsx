@@ -10,16 +10,16 @@ export function StopList({ stops }: { stops: Stop[] }) {
     <div>
       {stops.map((stop, index) => (
         <div key={`${stop.candidateId ?? stop.name}-${stop.role}`}>
-          <article className="surface overflow-hidden rounded-[16px] p-2.5">
-            <div className="flex items-center gap-2.5">
-              <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-[12px] bg-[#1f1b19]">
+          <article className="surface hover-lift overflow-hidden rounded-[16px] p-2.5 md:p-3.5">
+            <div className="flex items-center gap-2.5 md:gap-3.5">
+              <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-[12px] bg-[#1f1b19] md:h-[72px] md:w-[72px]">
                 {stop.photoUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={stop.photoUrl}
                     alt={`Street photo of ${stop.name}`}
-                    width={56}
-                    height={56}
+                    width={72}
+                    height={72}
                     className="h-full w-full object-cover"
                   />
                 ) : null}
@@ -29,7 +29,7 @@ export function StopList({ stops }: { stops: Stop[] }) {
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-start justify-between gap-2">
-                  <p className="text-[14px] font-semibold leading-snug tracking-[-0.02em] text-cream">
+                  <p className="text-[14px] font-semibold leading-snug tracking-[-0.02em] text-cream md:text-[16px]">
                     {stop.name}
                   </p>
                   <span className="glass-pill shrink-0 rounded-full px-2 py-[3px] text-[11px] text-cream/80">
@@ -39,7 +39,7 @@ export function StopList({ stops }: { stops: Stop[] }) {
                 <p className="mt-0.5 text-[11px] text-cream/45">{stop.area}</p>
                 {stop.hoursHint ? (
                   <p
-                    className={`mt-1 text-[11px] font-medium ${
+                    className={`mt-1 text-[11px] font-medium md:inline-flex md:rounded-full md:bg-cream/[0.06] md:px-2 md:py-[3px] ${
                       stop.hoursHint.open === true
                         ? "text-[#8fce9a]"
                         : stop.hoursHint.open === false
@@ -66,7 +66,7 @@ export function StopList({ stops }: { stops: Stop[] }) {
               href={stop.googleMapsUrl}
               target="_blank"
               rel="noreferrer"
-              className="mt-2.5 flex h-10 items-center justify-center gap-1.5 rounded-[12px] border border-cream/8 bg-cream/[0.06] text-[13px] font-semibold text-cream"
+              className="hover-bright mt-2.5 flex h-10 items-center justify-center gap-1.5 rounded-[12px] border border-cream/8 bg-cream/[0.06] text-[13px] font-semibold text-cream md:h-11"
             >
               <MapsPin />
               Open in Google Maps
@@ -77,7 +77,7 @@ export function StopList({ stops }: { stops: Stop[] }) {
               className="flex items-center gap-2.5 px-1 py-2.5"
               aria-label={gaps[index]?.label}
             >
-              <span className="flex w-14 justify-center" aria-hidden>
+              <span className="flex w-14 justify-center md:w-[72px]" aria-hidden>
                 <span className="h-8 w-px bg-cream/20" />
               </span>
               <p className="text-[12px] font-medium text-cream/60">

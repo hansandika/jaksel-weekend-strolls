@@ -11,7 +11,7 @@ export function ComboHero({
 }) {
   return (
     <div
-      className="relative h-[184px] overflow-hidden bg-[#1f1b19]"
+      className="relative h-[184px] overflow-hidden bg-[#1f1b19] md:h-auto md:aspect-[3/4]"
       style={{ background: tone }}
     >
       {photoUrl ? (
@@ -20,7 +20,7 @@ export function ComboHero({
         <img
           src={photoUrl}
           alt=""
-          className="absolute inset-0 h-full w-full object-cover"
+          className="media-zoom absolute inset-0 h-full w-full object-cover"
         />
       ) : null}
       <span className="absolute inset-0 bg-gradient-to-t from-[#1a1614] via-[#1a1614]/55 to-transparent" />

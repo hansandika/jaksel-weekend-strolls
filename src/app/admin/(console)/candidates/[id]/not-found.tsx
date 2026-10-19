@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function CandidateMissing() {
   return (
-    <main className="phone-shell">
+    <main className="phone-shell admin-shell">
       <p className="text-[13px] font-medium text-coral">Editor</p>
       <h1 className="mt-1.5 text-[26px] font-semibold tracking-[-0.03em] text-cream">
         Candidate missing
@@ -12,7 +12,7 @@ export default function CandidateMissing() {
       </p>
       <Link
         href="/admin/queue"
-        className="mt-5 flex h-11 items-center justify-center rounded-[12px] bg-coral text-[15px] font-semibold text-ink"
+        className="hover-bright mt-5 flex h-11 items-center justify-center rounded-[12px] bg-coral text-[15px] font-semibold text-ink md:w-fit md:px-5"
       >
         Back to queue
       </Link>
