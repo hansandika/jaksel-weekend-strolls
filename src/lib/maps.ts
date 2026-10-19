@@ -1,10 +1,24 @@
 import type { Stop } from "./types";
 import { hasCoords } from "./walk";
 
+const PLACE_URL = /^https:\/\/(www\.)?google\.[a-z.]+\/maps\//i;
+
 /**
- * Official Google Maps URLs only (`maps/search/?api=1`, `maps/dir/?api=1`).
- * Never scrape Maps HTML or unofficial endpoints.
+ * Official Maps URLs: a stored place link from a browser lookup, otherwise
+ * `maps/search/?api=1` and `maps/dir/?api=1`. This module does not fetch Maps.
  */
+export function googleMapsPlaceUrl(options: {
+  placeUrl?: string | null;
+  name: string;
+  area?: string | null;
+  lat?: number | null;
+  lng?: number | null;
+}): string {
+  const direct = options.placeUrl?.trim();
+  if (direct && PLACE_URL.test(direct)) return direct;
+  return googleMapsSearchUrl(options);
+}
+
 export function googleMapsSearchUrl(options: {
   name: string;
   area?: string | null;

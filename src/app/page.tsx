@@ -65,6 +65,10 @@ export default async function HubPage() {
           </div>
         </section>
       ) : null}
+
+      <p className="mt-6 text-center text-[11px] text-cream/35">
+        Places from Google Maps + OpenStreetMap
+      </p>
     </main>
   );
 }

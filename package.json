@@ -9,7 +9,8 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "import:bulk": "node scripts/bulk-import.mjs",
-    "import:photos": "node scripts/bulk-import.mjs --photos-only"
+    "import:photos": "node scripts/bulk-import.mjs --photos-only",
+    "import:gmaps": "node scripts/import-gmaps.mjs"
   },
   "dependencies": {
     "next": "^15.5.25",

@@ -16,6 +16,7 @@ const FILTER_CHIPS: { key: QueueFilter; label: string }[] = [
   { key: "food", label: "Food" },
   { key: "mall", label: "Mall" },
   { key: "out", label: "Out of Jaksel" },
+  { key: "gmaps", label: "Google Maps" },
 ];
 
 function statusLabel(status: Candidate["status"]): string {
@@ -169,7 +170,7 @@ export function QueueClient({
         Tap row → detail · checkbox → bulk actions
       </p>
       <p className="mt-1 text-[11px] text-cream/30">
-        Places from OpenStreetMap (Overpass, Geofabrik, HOT). Not Google Places.
+        Places from Google Maps + OpenStreetMap. OSM rows stay as the fallback.
       </p>
     </>
   );

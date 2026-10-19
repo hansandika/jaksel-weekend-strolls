@@ -17,6 +17,9 @@ export type Stop = {
   googleMapsUrl: string;
   photoUrl: string | null;
   photoCredit?: string | null;
+  rating?: number | null;
+  reviewCount?: number | null;
+  priceRange?: string | null;
   tiktokUrl: string | null;
   hoursHint?: HoursHint | null;
 };

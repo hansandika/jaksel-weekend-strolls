@@ -27,6 +27,12 @@ export type Candidate = {
   raw: Record<string, unknown>;
   created_at: string;
   updated_at: string;
+  gmaps_ftid?: string | null;
+  gmaps_place_url?: string | null;
+  rating?: number | string | null;
+  review_count?: number | string | null;
+  price_range?: string | null;
+  gmaps_category?: string | null;
 };
 
 export type CandidateCounts = {
@@ -50,4 +56,4 @@ export type DiscoveryRun = {
   finished_at: string | null;
 };
 
-export type QueueFilter = "all" | "cafe" | "food" | "mall" | "out";
+export type QueueFilter = "all" | "cafe" | "food" | "mall" | "out" | "gmaps";
