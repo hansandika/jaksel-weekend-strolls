@@ -20,9 +20,9 @@ const GENERIC_NAME =
   /^(kfc|mcdonald'?s|starbucks|pizza hut|kopi kenangan|flash coffee|fore coffee|tomoro coffee|janji jiwa|mixue|hokben|old town white coffee|point coffee|maxx coffee|cotti coffee)$/i;
 
 const CAFE_TYPES = new Set(["cafe", "bakery", "ice_cream"]);
-const FOOD_TYPES = new Set(["restaurant", "fast_food", "bar"]);
+const FOOD_TYPES = new Set(["restaurant", "fast_food", "bar", "food_court"]);
 const MALL_TYPES = new Set(["mall", "marketplace"]);
-const MEAL_TYPES = new Set(["restaurant", "fast_food", "marketplace"]);
+const MEAL_TYPES = new Set(["restaurant", "fast_food", "marketplace", "food_court"]);
 const DESSERT_TYPES = new Set(["ice_cream", "bakery"]);
 
 type StopKind = "meal" | "coffee" | "dessert" | "mall" | "other";
@@ -37,12 +37,14 @@ type AreaRecipe = {
   areaLabel: string;
   budget: string;
   tags: string[];
-  prefer: "food" | "cafe" | "mix";
+  prefer: "food" | "cafe" | "mix" | "attraction";
   format: string;
   tip: string;
   rainNotes: string;
   rainSwapId?: string | null;
   stopLimit?: number;
+  stopOrder?: string[];
+  orderBy?: "route_order";
 };
 
 const AREA_RECIPES: AreaRecipe[] = [
@@ -143,6 +145,24 @@ const AREA_RECIPES: AreaRecipe[] = [
     rainSwapId: null,
     stopLimit: 5,
   },
+  {
+    key: "tmii",
+    comboId: "tmii-day-trip",
+    title: "Taman Mini Full Day: Museum, Cable Car, Birds, Fountain Show",
+    subtitle: "09:00–19:15 · museum, cable car, birds, fountain",
+    vibe: "Day Trip",
+    duration: "~10h",
+    areaLabel: "TMII (Jakarta Timur)",
+    budget: "Rp275-375k weekend",
+    tags: ["out-of-jaksel", "family", "heritage", "sightseeing"],
+    prefer: "attraction",
+    format: "Day trip",
+    tip: "LRT Jabodebek to TMII station, then the free shuttle (buy the TMII ticket online first). Tirta Cerita is closed Mondays.",
+    rainNotes: "Museum Indonesia plus the free indoor museums.",
+    rainSwapId: null,
+    stopLimit: 7,
+    orderBy: "route_order",
+  },
 ];
 
 const RECIPE_AREA_KEYS = new Set(AREA_RECIPES.map((recipe) => recipe.key));
@@ -208,6 +228,7 @@ function stopKind(candidate: Candidate): StopKind {
 }
 
 function kindCap(prefer: AreaRecipe["prefer"], kind: StopKind): number {
+  if (prefer === "attraction") return Number.POSITIVE_INFINITY;
   if (prefer === "food") {
     if (kind === "dessert" || kind === "coffee") return 1;
     return Number.POSITIVE_INFINITY;
@@ -241,6 +262,8 @@ function score(candidate: Candidate, prefer: AreaRecipe["prefer"]): number {
     if (kind === "cafe") value += 16;
     if (kind === "mall") value += 6;
     if (kind === "food") value += 4;
+  } else if (prefer === "attraction") {
+    value += 6;
   } else {
     if (kind === "cafe" || kind === "food") value += 10;
     if (kind === "mall") value += 8;
@@ -294,11 +317,13 @@ function keepsBalance(
   const previous = countKinds(before);
   const next = countKinds(after);
   const minimums: Partial<Record<StopKind, number>> =
-    prefer === "food"
-      ? { meal: 2 }
-      : prefer === "cafe"
-        ? { coffee: 2 }
-        : { meal: 1 };
+    prefer === "attraction"
+      ? {}
+      : prefer === "food"
+        ? { meal: 2 }
+        : prefer === "cafe"
+          ? { coffee: 2 }
+          : { meal: 1 };
   for (const [kind, minimum] of Object.entries(minimums) as Array<[StopKind, number]>) {
     if (next[kind] < Math.min(minimum, previous[kind])) return false;
   }
@@ -326,11 +351,13 @@ function pickMix(
   };
 
   const minimums: Array<{ kind: StopKind; count: number }> =
-    prefer === "food"
-      ? [{ kind: "meal", count: 2 }]
-      : prefer === "cafe"
-        ? [{ kind: "coffee", count: 2 }]
-        : [{ kind: "meal", count: 1 }];
+    prefer === "attraction"
+      ? []
+      : prefer === "food"
+        ? [{ kind: "meal", count: 2 }]
+        : prefer === "cafe"
+          ? [{ kind: "coffee", count: 2 }]
+          : [{ kind: "meal", count: 1 }];
 
   for (const minimum of minimums) {
     for (const candidate of ranked) {
@@ -443,13 +470,76 @@ function toStop(candidate: Candidate): Stop | null {
   };
 }
 
+function gmapsFtid(candidate: Candidate): string | null {
+  const column = candidate.gmaps_ftid?.trim();
+  if (column) return column;
+  const sourceId = candidate.source_id?.trim() ?? "";
+  if (sourceId.startsWith("gmaps/")) return sourceId.slice("gmaps/".length);
+  const google = candidate.raw?.google_maps;
+  if (google && typeof google === "object" && "ftid" in google) {
+    const ftid = (google as { ftid?: unknown }).ftid;
+    if (typeof ftid === "string" && ftid.trim()) return ftid.trim();
+  }
+  return null;
+}
+
+function routeOrderValue(candidate: Candidate): number | null {
+  const value = candidate.raw?.route_order;
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim()) {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return null;
+}
+
+function stopsInListedOrder(
+  pool: Candidate[],
+  ftids: string[],
+  limit: number,
+): Candidate[] {
+  const byFtid = new Map<string, Candidate>();
+  for (const candidate of pool) {
+    const ftid = gmapsFtid(candidate);
+    if (ftid && !byFtid.has(ftid)) byFtid.set(ftid, candidate);
+  }
+  const picked: Candidate[] = [];
+  for (const ftid of ftids) {
+    const candidate = byFtid.get(ftid);
+    if (!candidate) continue;
+    picked.push(candidate);
+    if (picked.length >= limit) break;
+  }
+  return picked;
+}
+
+function stopsInRouteOrder(pool: Candidate[], limit: number): Candidate[] {
+  return pool
+    .filter((candidate) => routeOrderValue(candidate) != null)
+    .sort(
+      (a, b) => (routeOrderValue(a) ?? 0) - (routeOrderValue(b) ?? 0),
+    )
+    .slice(0, limit);
+}
+
+function chooseStops(pool: Candidate[], recipe: AreaRecipe): Candidate[] {
+  const limit = recipe.stopLimit ?? DEFAULT_STOP_LIMIT;
+  if (recipe.stopOrder && recipe.stopOrder.length > 0) {
+    return stopsInListedOrder(pool, recipe.stopOrder, limit);
+  }
+  if (recipe.orderBy === "route_order") {
+    return stopsInRouteOrder(pool, limit);
+  }
+  return pickMix(pool, recipe.prefer, limit);
+}
+
 function comboFromRecipe(
   recipe: AreaRecipe,
   candidates: Candidate[],
   toneIndex: number,
 ): Combo | null {
   const pool = candidates.filter((item) => item.area_key === recipe.key && eligible(item));
-  const chosen = pickMix(pool, recipe.prefer, recipe.stopLimit ?? DEFAULT_STOP_LIMIT);
+  const chosen = chooseStops(pool, recipe);
   const stops = chosen
     .map(toStop)
     .filter((stop): stop is Stop => Boolean(stop));

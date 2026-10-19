@@ -2,6 +2,7 @@ import type { Combo, Stop } from "./types";
 
 const EARTH_KM = 6371;
 const WALK_KMH = 4.5;
+const SHUTTLE_GAP_KM = 1.2;
 
 export type WalkGap = {
   km: number;
@@ -50,6 +51,13 @@ export function formatKm(km: number): string {
 
 export function formatWalkGap(km: number): WalkGap {
   const minutes = walkMinutesForKm(km);
+  if (km > SHUTTLE_GAP_KM) {
+    return {
+      km,
+      minutes,
+      label: `shuttle / ~${minutes} min ride`,
+    };
+  }
   return {
     km,
     minutes,

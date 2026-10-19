@@ -24,6 +24,7 @@ function areaSummary(
   if (keys.has("scbd_senopati")) labels.push("SCBD/Senopati");
   if (keys.has("alam_sutera")) labels.push("Alam Sutera");
   if (keys.has("glodok")) labels.push("Glodok");
+  if (keys.has("tmii")) labels.push("TMII");
   return labels.length > 0 ? labels.join(" + ") : "run discovery";
 }
 
