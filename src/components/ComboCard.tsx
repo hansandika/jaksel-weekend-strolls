@@ -13,7 +13,7 @@ export function ComboCard({ combo }: { combo: Combo }) {
   const math = comboDayMath(combo);
   const title = (
     <>
-      <h3 className="text-[22px] font-semibold leading-[1.15] tracking-[-0.03em] text-cream">
+      <h3 className="text-[22px] font-semibold leading-[1.15] tracking-[-0.03em] text-cream md:text-[20px] lg:text-[22px]">
         {combo.title}
       </h3>
       <p className="mt-1 text-[12px] leading-snug text-cream/70">{math.line}</p>
@@ -34,7 +34,7 @@ export function ComboCard({ combo }: { combo: Combo }) {
   );
 
   return (
-    <article className="surface overflow-hidden rounded-[20px]">
+    <article className="surface hover-lift media-card overflow-hidden rounded-[20px] md:flex md:h-full md:flex-col">
       {slides.urls.length > 0 ? (
         <>
           <TikTokCarousel
@@ -43,7 +43,7 @@ export function ComboCard({ combo }: { combo: Combo }) {
             tones={combo.posterTones}
             size="hub"
           />
-          <div className="px-3.5 pt-1">{title}</div>
+          <div className="px-3.5 pt-1 md:flex-1">{title}</div>
         </>
       ) : (
         <ComboHero
@@ -53,10 +53,10 @@ export function ComboCard({ combo }: { combo: Combo }) {
           {title}
         </ComboHero>
       )}
-      <div className="flex items-center gap-2 px-3 pb-3 pt-2.5">
+      <div className="flex items-center gap-2 px-3 pb-3 pt-2.5 md:mt-auto">
         <Link
           href={`/combo/${combo.id}`}
-          className="flex h-11 flex-1 items-center justify-center rounded-[12px] bg-coral text-[15px] font-semibold text-ink"
+          className="hover-bright flex h-11 flex-1 items-center justify-center rounded-[12px] bg-coral text-[15px] font-semibold text-ink"
         >
           Open stroll
         </Link>

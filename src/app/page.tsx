@@ -14,18 +14,32 @@ export default async function HubPage() {
 
   return (
     <main id="main" className="phone-shell">
-      <HubHeader pack={pack} />
-      <EventChip event={pack.event} />
-      <AskBar pack={pack} />
-      <SuggestedPairing pack={pack} />
-      <SavedStrolls combos={pack.combos} />
+      <div className="hub-hero">
+        <div className="min-w-0">
+          <HubHeader pack={pack} />
+          <EventChip event={pack.event} />
+        </div>
+        <div className="hub-ask">
+          <AskBar pack={pack} />
+        </div>
+      </div>
 
-      <section className="mt-5">
-        <h2 className="mb-2.5 text-[16px] font-semibold tracking-[-0.02em] text-cream">
+      <div className="hub-rail">
+        <div className="hub-rail-main">
+          <SuggestedPairing pack={pack} />
+        </div>
+        <SavedStrolls
+          combos={pack.combos}
+          className="lg:mt-0 lg:w-80 lg:shrink-0 xl:w-96"
+        />
+      </div>
+
+      <section className="hub-combos mt-5">
+        <h2 className="mb-2.5 text-[16px] font-semibold tracking-[-0.02em] text-cream lg:mb-4 lg:text-[20px]">
           This weekend · {hubCombos.length} stroll
           {hubCombos.length === 1 ? "" : "s"}
         </h2>
-        <div className="space-y-3">
+        <div className="combo-grid space-y-3 md:space-y-0">
           {hubCombos.map((combo) => (
             <ComboCard key={combo.id} combo={combo} />
           ))}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { isPlayableTikTokUrl, parseTikTokVideo } from "@/lib/tiktok";
 import { PlayGlyph } from "./TikTokStrip";
 import { TikTokPlayer } from "./TikTokPlayer";
@@ -21,6 +21,8 @@ export function TikTokCarousel({
   const [active, setActive] = useState(0);
   const [inView, setInView] = useState(false);
   const [autoplayOk, setAutoplayOk] = useState(true);
+  const [canPrev, setCanPrev] = useState(false);
+  const [canNext, setCanNext] = useState(false);
   const playable = urls.filter(isPlayableTikTokUrl);
 
   const syncActive = useCallback(() => {
@@ -40,6 +42,8 @@ export function TikTokCarousel({
       }
     });
     setActive(closest);
+    setCanPrev(node.scrollLeft > 8);
+    setCanNext(node.scrollLeft + node.clientWidth < node.scrollWidth - 8);
   }, []);
 
   useEffect(() => {
@@ -69,34 +73,88 @@ export function TikTokCarousel({
     return () => observer.disconnect();
   }, []);
 
+  const scrollBehavior = (): ScrollBehavior =>
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      ? "auto"
+      : "smooth";
+
   const goTo = (index: number) => {
     const node = scrollerRef.current;
     const slide = node?.children[index] as HTMLElement | undefined;
     if (!node || !slide) return;
-    node.scrollTo({ left: slide.offsetLeft, behavior: "smooth" });
+    node.scrollTo({ left: slide.offsetLeft, behavior: scrollBehavior() });
+  };
+
+  const scrollByTile = (direction: -1 | 1) => {
+    const node = scrollerRef.current;
+    const slide = node?.querySelector<HTMLElement>(".tiktok-slide");
+    if (!node || !slide) return;
+    const styles = getComputedStyle(node);
+    const gap = Number.parseFloat(styles.columnGap || "0") || 0;
+    node.scrollBy({
+      left: direction * (slide.offsetWidth + gap),
+      behavior: scrollBehavior(),
+    });
+  };
+
+  const onKeyDown = (event: KeyboardEvent<HTMLElement>) => {
+    if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
+    event.preventDefault();
+    scrollByTile(event.key === "ArrowRight" ? 1 : -1);
   };
 
   if (playable.length === 0) {
     return null;
   }
 
+  const quietArrows = size === "hub";
+
   return (
-    <section ref={rootRef} aria-label="TikTok proof">
-      <div
-        ref={scrollerRef}
-        className={`tiktok-scroll flex w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain ${
-          size === "page" ? "tiktok-scroll-page rounded-[16px]" : ""
-        }`}
-      >
-        {playable.map((url, index) => (
-          <CarouselSlide
-            key={`${url}-${index}`}
-            url={url}
-            tone={tones[index] ?? tones[0] ?? "#3a2f2c"}
-            photo={photos?.[index] ?? null}
-            autoplay={index === active && autoplayOk && inView}
-          />
-        ))}
+    <section
+      ref={rootRef}
+      aria-label="TikTok proof"
+      aria-roledescription="carousel"
+      tabIndex={0}
+      onKeyDown={onKeyDown}
+      className="group"
+    >
+      <div className="relative">
+        <div
+          ref={scrollerRef}
+          className={`tiktok-scroll flex w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain ${
+            size === "page"
+              ? "tiktok-scroll-page rounded-[16px] md:rounded-none"
+              : "tiktok-scroll-hub"
+          }`}
+        >
+          {playable.map((url, index) => (
+            <CarouselSlide
+              key={`${url}-${index}`}
+              url={url}
+              tone={tones[index] ?? tones[0] ?? "#3a2f2c"}
+              photo={photos?.[index] ?? null}
+              autoplay={index === active && autoplayOk && inView}
+            />
+          ))}
+        </div>
+        {playable.length > 1 ? (
+          <>
+            <CarouselArrow
+              direction="left"
+              label="Previous clip"
+              disabled={!canPrev}
+              quiet={quietArrows}
+              onClick={() => scrollByTile(-1)}
+            />
+            <CarouselArrow
+              direction="right"
+              label="Next clip"
+              disabled={!canNext}
+              quiet={quietArrows}
+              onClick={() => scrollByTile(1)}
+            />
+          </>
+        ) : null}
       </div>
       {playable.length > 1 ? (
         <div className="mt-2 flex items-center justify-center gap-2.5">
@@ -124,9 +182,56 @@ export function TikTokCarousel({
         </div>
       ) : null}
       <p className="mt-1 text-center text-[11px] text-cream/40">
-        Tap the clip to open TikTok
+        <span className="md:hidden">Tap the clip to open TikTok</span>
+        <span className="hidden md:inline">Click the clip to open TikTok</span>
       </p>
     </section>
+  );
+}
+
+function CarouselArrow({
+  direction,
+  label,
+  disabled,
+  quiet,
+  onClick,
+}: {
+  direction: "left" | "right";
+  label: string;
+  disabled: boolean;
+  quiet: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      disabled={disabled}
+      onClick={onClick}
+      className={`absolute top-1/2 z-20 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-cream/15 bg-ink/80 text-cream shadow-lg backdrop-blur-md hover-bright disabled:cursor-default disabled:opacity-30 md:flex ${
+        direction === "left" ? "left-3" : "right-3"
+      } ${
+        quiet
+          ? "md:pointer-events-none md:opacity-0 md:group-hover:pointer-events-auto md:group-hover:opacity-100 md:focus-visible:pointer-events-auto md:focus-visible:opacity-100"
+          : ""
+      }`}
+    >
+      <Chevron direction={direction} />
+    </button>
+  );
+}
+
+function Chevron({ direction }: { direction: "left" | "right" }) {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
+      <path
+        d={direction === "left" ? "M11.25 4.5 6.75 9l4.5 4.5" : "M6.75 4.5 11.25 9l-4.5 4.5"}
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }
 

@@ -9,10 +9,10 @@ export function HubHeader({ pack }: { pack: WeekendPack }) {
       <p className="text-[11px] font-medium tracking-[0.12em] text-cream/45">
         {pack.brand.toUpperCase()}
       </p>
-      <h1 className="mt-1 text-[26px] font-semibold leading-[1.1] tracking-[-0.035em] text-cream">
+      <h1 className="mt-1 text-[26px] font-semibold leading-[1.1] tracking-[-0.035em] text-cream lg:text-[40px] xl:text-[44px]">
         {pack.title}
       </h1>
-      <p className="mt-1 text-[13px] text-cream/55">
+      <p className="mt-1 text-[13px] text-cream/55 lg:text-[15px]">
         This weekend · {strollCount} stroll{strollCount === 1 ? "" : "s"}
       </p>
       <span className="glass-pill absolute right-0 top-0 rounded-full px-2.5 py-[5px] text-[11px] font-semibold tracking-wide text-cream">

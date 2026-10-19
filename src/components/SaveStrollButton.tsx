@@ -6,13 +6,20 @@ export function SaveStrollButton({
   id,
   title,
   compact = false,
+  prominent = false,
 }: {
   id: string;
   title: string;
   compact?: boolean;
+  prominent?: boolean;
 }) {
   const { ready, saved, toggle } = useSavedStrolls();
   const on = ready && saved(id);
+  const size = prominent
+    ? "h-11 flex-1 px-4 text-[13px]"
+    : compact
+      ? "h-11 min-w-11 px-3"
+      : "h-8 px-2.5";
 
   return (
     <button
@@ -21,9 +28,9 @@ export function SaveStrollButton({
       aria-pressed={on}
       aria-label={on ? `Remove ${title} from saved` : `Save ${title}`}
       disabled={!ready}
-      className={`flex items-center justify-center rounded-full text-[12px] font-semibold ${
-        compact ? "h-11 min-w-11 px-3" : "h-8 px-2.5"
-      } ${on ? "bg-coral text-ink" : "glass-pill text-cream"}`}
+      className={`hover-bright flex items-center justify-center rounded-full text-[12px] font-semibold ${size} ${
+        on ? "bg-coral text-ink" : "glass-pill text-cream"
+      }`}
     >
       {on ? "Saved" : "Save"}
     </button>

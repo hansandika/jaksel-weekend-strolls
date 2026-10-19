@@ -32,6 +32,156 @@ body {
   padding: 18px 16px 40px;
 }
 
+/* Wider shells start at tablet. Below 768px the 390px column is unchanged. */
+@media (min-width: 768px) {
+  .phone-shell {
+    width: min(100% - 32px, 760px);
+    padding: 28px 24px 56px;
+  }
+
+  .phone-shell.combo-page {
+    padding-bottom: 112px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .phone-shell {
+    width: min(100% - 48px, 1120px);
+    padding: 36px 32px 64px;
+  }
+
+  .phone-shell.combo-page {
+    padding-bottom: 64px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .phone-shell {
+    width: min(100% - 48px, 1280px);
+    padding: 40px 36px 72px;
+  }
+}
+
+@media (min-width: 768px) {
+  .phone-shell.admin-shell {
+    width: min(100% - 32px, 840px);
+  }
+}
+
+@media (min-width: 1024px) {
+  .phone-shell.admin-shell {
+    width: min(100% - 48px, 960px);
+  }
+}
+
+.stroll-route {
+  display: none;
+}
+
+.start-stroll-bar {
+  width: min(100%, 390px);
+}
+
+@media (min-width: 768px) {
+  .start-stroll-bar {
+    width: min(100% - 32px, 760px);
+  }
+}
+
+@media (min-width: 1024px) {
+  .start-stroll-bar {
+    display: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hub-hero {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 2.5rem;
+  }
+
+  .hub-ask {
+    width: min(42%, 440px);
+    flex-shrink: 0;
+  }
+
+  .hub-rail {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    margin-top: 1.75rem;
+  }
+
+  .hub-rail-main {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .hub-rail-main:empty {
+    display: none;
+  }
+
+  .hub-rail > :only-child {
+    width: 100%;
+    flex: 1 1 auto;
+  }
+
+  .combo-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 2rem;
+    align-items: start;
+  }
+
+  .stroll-route {
+    display: block;
+    position: sticky;
+    top: 1.5rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .hub-ask {
+    width: min(40%, 480px);
+  }
+
+  .hub-rail {
+    gap: 2rem;
+  }
+
+  .combo-layout {
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: 2.5rem;
+  }
+
+  .phone-shell.combo-page {
+    padding-bottom: 72px;
+  }
+}
+
+@media (min-width: 768px) {
+  .combo-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .combo-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .combo-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
 .tiktok-scroll {
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
@@ -53,6 +203,34 @@ body {
   height: min(52dvh, calc((min(100vw, 390px) - 32px) * 16 / 9));
 }
 
+@media (min-width: 768px) {
+  .tiktok-scroll-hub .tiktok-slide {
+    height: auto;
+    aspect-ratio: 3 / 4;
+  }
+
+  .tiktok-scroll-page {
+    gap: 0.75rem;
+    scroll-padding-inline: 0.25rem;
+  }
+
+  .tiktok-scroll-page .tiktok-slide {
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 0;
+    height: 500px;
+    aspect-ratio: 9 / 16;
+    scroll-snap-align: start;
+    border-radius: 16px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .tiktok-scroll-page .tiktok-slide {
+    height: 540px;
+  }
+}
+
 .tiktok-scroll::-webkit-scrollbar {
   display: none;
 }
@@ -71,4 +249,36 @@ body {
 :focus-visible {
   outline: 2px solid var(--color-coral);
   outline-offset: 2px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hover-lift {
+    transition:
+      transform 180ms ease,
+      border-color 180ms ease;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    border-color: rgba(250, 247, 242, 0.22);
+  }
+
+  .hover-bright {
+    transition:
+      filter 160ms ease,
+      background-color 160ms ease,
+      border-color 160ms ease;
+  }
+
+  .hover-bright:hover {
+    filter: brightness(1.08);
+  }
+
+  .media-zoom {
+    transition: transform 280ms ease;
+  }
+
+  .media-card:hover .media-zoom {
+    transform: scale(1.04);
+  }
 }

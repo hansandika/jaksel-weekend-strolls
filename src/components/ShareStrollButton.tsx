@@ -4,10 +4,12 @@ export function ShareStrollButton({
   title,
   text,
   path,
+  prominent = false,
 }: {
   title: string;
   text: string;
   path: string;
+  prominent?: boolean;
 }) {
   const share = async () => {
     const url = `${window.location.origin}${path}`;
@@ -33,7 +35,9 @@ export function ShareStrollButton({
       type="button"
       onClick={share}
       aria-label={`Share ${title}`}
-      className="glass-pill flex h-8 items-center rounded-full px-2.5 text-[12px] font-semibold text-cream"
+      className={`glass-pill hover-bright flex items-center rounded-full font-semibold text-cream ${
+        prominent ? "h-11 flex-1 justify-center px-4 text-[13px]" : "h-8 px-2.5 text-[12px]"
+      }`}
     >
       Share
     </button>

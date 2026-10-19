@@ -123,7 +123,7 @@ export function QueueClient({
         <p className="mt-3 text-[13px] text-coral">Select at least one row.</p>
       ) : null}
 
-      <div className="mt-4 space-y-2.5">
+      <div className="mt-4 space-y-2.5 lg:grid lg:grid-cols-2 lg:gap-3 lg:space-y-0">
         {candidates.length === 0 ? (
           <p className="rounded-[18px] bg-card px-4 py-6 text-[14px] text-cream/55">
             No candidates yet. Run OSM discovery or{" "}
@@ -133,7 +133,7 @@ export function QueueClient({
           candidates.map((candidate) => (
             <article
               key={candidate.id}
-              className="flex items-center gap-3 rounded-[18px] bg-card px-3.5 py-3.5"
+              className="hover-lift flex items-center gap-3 rounded-[18px] border border-transparent bg-card px-3.5 py-3.5"
             >
               <input
                 type="checkbox"
