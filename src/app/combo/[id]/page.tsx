@@ -8,7 +8,7 @@ import { StopList } from "@/components/StopList";
 import { StrollRoutePanel } from "@/components/StrollRoutePanel";
 import { TikTokCarousel } from "@/components/TikTokCarousel";
 import { googleMapsWalkingDirUrl } from "@/lib/maps";
-import { getComboTikTokSlides, getLivePack } from "@/lib/pack";
+import { DAY_TRIP_LABEL, getComboTikTokSlides, getLivePack, isDayTrip } from "@/lib/pack";
 import { getSiteUrl } from "@/lib/site-url";
 import { comboDayMath } from "@/lib/walk";
 
@@ -90,7 +90,16 @@ export default async function ComboPage({ params }: ComboPageProps) {
             </div>
           </div>
 
-          <h1 className="mt-4 text-[26px] font-semibold leading-[1.12] tracking-[-0.035em] text-cream lg:text-[40px]">
+          {isDayTrip(combo) ? (
+            <p className="mt-4 text-[12px] font-semibold tracking-wide text-coral">
+              {DAY_TRIP_LABEL}
+            </p>
+          ) : null}
+          <h1
+            className={`text-[26px] font-semibold leading-[1.12] tracking-[-0.035em] text-cream lg:text-[40px] ${
+              isDayTrip(combo) ? "mt-1" : "mt-4"
+            }`}
+          >
             {combo.title}
           </h1>
           <p className="mt-1.5 text-[13px] leading-snug text-cream/55 lg:max-w-2xl lg:text-[15px]">

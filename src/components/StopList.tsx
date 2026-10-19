@@ -37,6 +37,11 @@ export function StopList({ stops }: { stops: Stop[] }) {
                   </span>
                 </div>
                 <p className="mt-0.5 text-[11px] text-cream/45">{stop.area}</p>
+                {stop.photoCredit ? (
+                  <p className="mt-1 text-[10px] leading-snug text-cream/35">
+                    {stop.photoCredit}
+                  </p>
+                ) : null}
                 {stop.hoursHint ? (
                   <p
                     className={`mt-1 text-[11px] font-medium md:inline-flex md:rounded-full md:bg-cream/[0.06] md:px-2 md:py-[3px] ${

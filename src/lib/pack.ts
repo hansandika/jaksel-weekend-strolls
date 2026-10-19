@@ -16,11 +16,24 @@ export function formatComboMeta(combo: Combo): string {
   return `${combo.vibe} · ${combo.duration} · ${combo.area} · ${combo.budget}`;
 }
 
+export const DAY_TRIP_LABEL = "Day Trip · Outside Jaksel";
+
+export function isDayTrip(combo: Combo): boolean {
+  return combo.tags.includes("out-of-jaksel");
+}
+
 export function getHubCombos(pack: WeekendPack): Combo[] {
-  if (pack.featuredIds.length === 0) return pack.combos.slice(0, 4);
+  const weekend = pack.combos.filter((combo) => !isDayTrip(combo));
+  if (pack.featuredIds.length === 0) return weekend.slice(0, 4);
   return pack.featuredIds
     .map((id) => pack.combos.find((combo) => combo.id === id))
-    .filter((combo): combo is Combo => Boolean(combo));
+    .filter((combo): combo is Combo => Boolean(combo))
+    .filter((combo) => !isDayTrip(combo));
+}
+
+export function getDayTrips(pack: WeekendPack): Combo[] {
+  const featured = new Set(getHubCombos(pack).map((combo) => combo.id));
+  return pack.combos.filter((combo) => isDayTrip(combo) && !featured.has(combo.id));
 }
 
 export function getComboCardPhotos(combo: Combo): Array<string | null> {

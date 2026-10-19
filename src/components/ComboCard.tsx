@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Combo } from "@/lib/types";
 import { displayLabel } from "@/lib/labels";
-import { getComboTikTokSlides } from "@/lib/pack";
+import { DAY_TRIP_LABEL, getComboTikTokSlides, isDayTrip } from "@/lib/pack";
 import { comboDayMath } from "@/lib/walk";
 import { ComboHero } from "./ComboHero";
 import { SaveStrollButton } from "./SaveStrollButton";
@@ -11,8 +11,18 @@ export function ComboCard({ combo }: { combo: Combo }) {
   const heroPhoto = combo.stops.find((stop) => stop.photoUrl)?.photoUrl ?? null;
   const slides = getComboTikTokSlides(combo);
   const math = comboDayMath(combo);
+  const dayTrip = isDayTrip(combo);
+  const chips = [
+    combo.vibe,
+    ...combo.tags.filter((tag) => tag !== "out-of-jaksel").slice(0, 2),
+  ];
   const title = (
     <>
+      {dayTrip ? (
+        <p className="mb-1 text-[11px] font-semibold tracking-wide text-coral">
+          {DAY_TRIP_LABEL}
+        </p>
+      ) : null}
       <h3 className="text-[22px] font-semibold leading-[1.15] tracking-[-0.03em] text-cream md:text-[20px] lg:text-[22px]">
         {combo.title}
       </h3>
@@ -21,7 +31,7 @@ export function ComboCard({ combo }: { combo: Combo }) {
         {combo.area} · {combo.budget}
       </p>
       <div className="mt-2 flex flex-wrap gap-1">
-        {[combo.vibe, ...combo.tags.slice(0, 2)].map((tag) => (
+        {chips.map((tag) => (
           <span
             key={tag}
             className="glass-pill rounded-full px-2 py-[3px] text-[11px] leading-none text-cream/85"

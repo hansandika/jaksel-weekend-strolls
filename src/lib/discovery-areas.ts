@@ -41,6 +41,13 @@ export const DISCOVERY_AREAS = [
     outOfJaksel: true,
     bbox: [-6.258, 106.638, -6.222, 106.672] as [number, number, number, number],
   },
+  {
+    key: "glodok",
+    label: "Glodok / Pancoran",
+    defaultOn: false,
+    outOfJaksel: true,
+    bbox: [-6.150, 106.805, -6.136, 106.820] as [number, number, number, number],
+  },
 ] as const;
 
 export const DISCOVERY_PLACE_TYPES = [
