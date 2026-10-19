@@ -56,7 +56,7 @@ export default async function HubPage() {
             Day Trip · Outside Jaksel
           </h2>
           <p className="mb-2.5 mt-1 text-[12px] leading-snug text-cream/50 lg:mb-4 lg:text-[14px]">
-            West Jakarta day trip.
+            Glodok and Taman Mini.
           </p>
           <div className="combo-grid space-y-3 md:space-y-0">
             {dayTrips.map((combo) => (

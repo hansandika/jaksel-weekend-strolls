@@ -79,7 +79,7 @@ Deno.serve(async (req: Request) => {
         query = query.overlaps("place_types", ["cafe", "bakery", "ice_cream"]);
       }
       if (filter === "food") {
-        query = query.overlaps("place_types", ["restaurant", "fast_food", "bar"]);
+        query = query.overlaps("place_types", ["restaurant", "fast_food", "bar", "food_court"]);
       }
       if (filter === "mall") {
         query = query.overlaps("place_types", ["mall", "marketplace"]);
