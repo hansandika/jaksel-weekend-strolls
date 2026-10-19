@@ -16,6 +16,7 @@ export type Stop = {
   lng?: number | null;
   googleMapsUrl: string;
   photoUrl: string | null;
+  photoCredit?: string | null;
   tiktokUrl: string | null;
   hoursHint?: HoursHint | null;
 };

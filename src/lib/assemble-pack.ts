@@ -1,5 +1,5 @@
 import { hasQueueEnv, listAllCandidates } from "./admin-api";
-import { candidatePhotoSrc } from "./candidate-photo";
+import { candidatePhotoCredit, candidatePhotoSrc } from "./candidate-photo";
 import type { Candidate } from "./candidate-types";
 import { isoWeekParts } from "./iso-week";
 import { hoursHintFromSpec, openingHoursFromCandidate } from "./hours";
@@ -37,6 +37,7 @@ type AreaRecipe = {
   tip: string;
   rainNotes: string;
   rainSwapId?: string | null;
+  stopLimit?: number;
 };
 
 const AREA_RECIPES: AreaRecipe[] = [
@@ -120,7 +121,27 @@ const AREA_RECIPES: AreaRecipe[] = [
     rainNotes: "Built for rain. If parking is jammed, drop at the basement and stay inside.",
     rainSwapId: null,
   },
+  {
+    key: "glodok",
+    comboId: "glodok-tangyuan-chinatown",
+    title: "Glodok Tangyuan + Chinatown Food Walk",
+    subtitle: "QR waitlist, Petak Enam, Tak Kie, temple, then tea",
+    vibe: "Day Trip",
+    duration: "~3.5h",
+    areaLabel: "Glodok / Pancoran (Jakarta Barat)",
+    budget: "Rp100-200k",
+    tags: ["out-of-jaksel", "viral-food", "heritage"],
+    prefer: "food",
+    format: "Day trip",
+    tip: "Scan Thankyou Tangyuan's QR waitlist at 09:00, then eat Petak Enam and Tak Kie while you wait.",
+    rainNotes: "Pantjoran Tea House is the covered AC stop when the lane ponds.",
+    rainSwapId: null,
+    stopLimit: 5,
+  },
 ];
+
+const RECIPE_AREA_KEYS = new Set(AREA_RECIPES.map((recipe) => recipe.key));
+const DEFAULT_STOP_LIMIT = 4;
 
 function hasLatLng(candidate: Candidate): boolean {
   return (
@@ -199,13 +220,20 @@ function eligible(candidate: Candidate): boolean {
   // Public hub ignores Candidate Queue status (new / approved / need_tiktok /
   // rejected). Approve/reject is an admin discovery tool only.
   if (candidate.area_key === "alam_sutera") return false;
-  if (candidate.tags?.includes("out-of-jaksel")) return false;
+  const outsideJaksel = candidate.tags?.includes("out-of-jaksel") ?? false;
+  if (outsideJaksel && !RECIPE_AREA_KEYS.has(candidate.area_key ?? "")) {
+    return false;
+  }
   if (!hasLatLng(candidate)) return false;
   if (!photoFor(candidate)) return false;
   return true;
 }
 
-function pickMix(pool: Candidate[], prefer: AreaRecipe["prefer"]): Candidate[] {
+function pickMix(
+  pool: Candidate[],
+  prefer: AreaRecipe["prefer"],
+  stopLimit = DEFAULT_STOP_LIMIT,
+): Candidate[] {
   const ranked = [...pool].sort((a, b) => score(b, prefer) - score(a, prefer));
   const picked: Candidate[] = [];
   const usedNames = new Set<string>();
@@ -214,7 +242,7 @@ function pickMix(pool: Candidate[], prefer: AreaRecipe["prefer"]): Candidate[] {
   const tryAdd = (candidate: Candidate) => {
     const key = candidate.name.trim().toLowerCase();
     if (usedNames.has(key)) return false;
-    if (picked.length >= 4) return false;
+    if (picked.length >= stopLimit) return false;
     usedNames.add(key);
     picked.push(candidate);
     counts[bucket(candidate)] += 1;
@@ -225,7 +253,7 @@ function pickMix(pool: Candidate[], prefer: AreaRecipe["prefer"]): Candidate[] {
   const without = ranked.filter((item) => !realTikTok(item));
 
   for (const candidate of withTikTok) {
-    if (picked.length >= 4) break;
+    if (picked.length >= stopLimit) break;
     tryAdd(candidate);
   }
 
@@ -247,14 +275,14 @@ function pickMix(pool: Candidate[], prefer: AreaRecipe["prefer"]): Candidate[] {
 
   if (prefer === "food" && counts.food === 0) {
     const extra = ranked.find((item) => bucket(item) === "food" && !picked.includes(item));
-    if (extra && picked.length < 4) tryAdd(extra);
+    if (extra && picked.length < stopLimit) tryAdd(extra);
   }
   if (prefer === "cafe" && counts.cafe === 0) {
     const extra = ranked.find((item) => bucket(item) === "cafe" && !picked.includes(item));
-    if (extra && picked.length < 4) tryAdd(extra);
+    if (extra && picked.length < stopLimit) tryAdd(extra);
   }
 
-  return preferHours(picked.slice(0, 4), ranked);
+  return preferHours(picked.slice(0, stopLimit), ranked);
 }
 
 function preferHours(picked: Candidate[], ranked: Candidate[]): Candidate[] {
@@ -330,6 +358,7 @@ function toStop(candidate: Candidate): Stop | null {
     lng: candidate.lng,
     googleMapsUrl: maps,
     photoUrl,
+    photoCredit: candidatePhotoCredit(candidate),
     tiktokUrl,
     hoursHint: hoursSpec ? hoursHintFromSpec(hoursSpec) : null,
   };
@@ -341,7 +370,7 @@ function comboFromRecipe(
   toneIndex: number,
 ): Combo | null {
   const pool = candidates.filter((item) => item.area_key === recipe.key && eligible(item));
-  const chosen = pickMix(pool, recipe.prefer);
+  const chosen = pickMix(pool, recipe.prefer, recipe.stopLimit ?? DEFAULT_STOP_LIMIT);
   const stops = chosen
     .map(toStop)
     .filter((stop): stop is Stop => Boolean(stop));
@@ -404,19 +433,12 @@ function emptyPack(message?: string): WeekendPack {
   };
 }
 
-export async function assembleLivePack(): Promise<WeekendPack> {
-  if (!hasQueueEnv()) {
-    return emptyPack("Queue env not set");
-  }
+function isOutsideJaksel(combo: Combo): boolean {
+  return combo.tags.includes("out-of-jaksel");
+}
 
+export function assemblePackFromCandidates(candidates: Candidate[]): WeekendPack {
   const week = isoWeekParts();
-  let candidates;
-  try {
-    candidates = await listAllCandidates();
-  } catch {
-    return emptyPack("Candidate Queue offline");
-  }
-
   const assembled = AREA_RECIPES.map((recipe, index) =>
     comboFromRecipe(recipe, candidates, index),
   ).filter((combo): combo is Combo => Boolean(combo));
@@ -427,16 +449,17 @@ export async function assembleLivePack(): Promise<WeekendPack> {
       assembled.find((item) => item.id === combo.rainSwapId)?.title ?? null;
   }
 
+  const weekend = assembled.filter((combo) => !isOutsideJaksel(combo));
   const sat =
-    assembled.find((combo) => combo.id === "blok-m-food") ??
-    assembled.find((combo) => combo.vibe.toLowerCase().includes("food")) ??
-    assembled[0];
+    weekend.find((combo) => combo.id === "blok-m-food") ??
+    weekend.find((combo) => combo.vibe.toLowerCase().includes("food")) ??
+    weekend[0];
   const sun =
-    assembled.find((combo) => combo.id === "cipete-cafes" && combo.id !== sat?.id) ??
-    assembled.find((combo) => combo.id !== sat?.id) ??
+    weekend.find((combo) => combo.id === "cipete-cafes" && combo.id !== sat?.id) ??
+    weekend.find((combo) => combo.id !== sat?.id) ??
     sat;
 
-  const featured = finiteWeekend(assembled, sat, sun);
+  const featured = finiteWeekend(weekend, sat, sun);
 
   return {
     isoWeek: week.isoWeek,
@@ -469,4 +492,19 @@ export async function assembleLivePack(): Promise<WeekendPack> {
     featuredIds: featured.map((combo) => combo.id),
     combos: assembled,
   };
+}
+
+export async function assembleLivePack(): Promise<WeekendPack> {
+  if (!hasQueueEnv()) {
+    return emptyPack("Queue env not set");
+  }
+
+  let candidates;
+  try {
+    candidates = await listAllCandidates();
+  } catch {
+    return emptyPack("Candidate Queue offline");
+  }
+
+  return assemblePackFromCandidates(candidates);
 }

@@ -4,13 +4,14 @@ import { EventChip } from "@/components/EventChip";
 import { HubHeader } from "@/components/HubHeader";
 import { SavedStrolls } from "@/components/SavedStrolls";
 import { SuggestedPairing } from "@/components/SuggestedPairing";
-import { getHubCombos, getLivePack } from "@/lib/pack";
+import { getDayTrips, getHubCombos, getLivePack } from "@/lib/pack";
 
 export const dynamic = "force-dynamic";
 
 export default async function HubPage() {
   const pack = await getLivePack();
   const hubCombos = getHubCombos(pack);
+  const dayTrips = getDayTrips(pack);
 
   return (
     <main id="main" className="phone-shell">
@@ -45,6 +46,25 @@ export default async function HubPage() {
           ))}
         </div>
       </section>
+
+      {dayTrips.length > 0 ? (
+        <section className="hub-combos mt-6" aria-labelledby="day-trips-heading">
+          <h2
+            id="day-trips-heading"
+            className="text-[16px] font-semibold tracking-[-0.02em] text-cream lg:text-[20px]"
+          >
+            Day Trip · Outside Jaksel
+          </h2>
+          <p className="mb-2.5 mt-1 text-[12px] leading-snug text-cream/50 lg:mb-4 lg:text-[14px]">
+            West Jakarta day trip.
+          </p>
+          <div className="combo-grid space-y-3 md:space-y-0">
+            {dayTrips.map((combo) => (
+              <ComboCard key={combo.id} combo={combo} />
+            ))}
+          </div>
+        </section>
+      ) : null}
     </main>
   );
 }

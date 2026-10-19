@@ -207,6 +207,8 @@ function composeTip(types: string[], area: AreaDef): string {
     scbd_senopati: "Keep it light — one SCBD coffee or Senopati dinner, not both.",
     alam_sutera:
       "Outside Jaksel — only use this if the week pack explicitly asks for Alam Sutera.",
+    glodok:
+      "West Jakarta day trip. Scan the tangyuan QR at 09:00, then walk Petak Enam and Tak Kie.",
   };
   const typeTips: string[] = [];
   if (types.includes("cafe")) {

@@ -23,6 +23,7 @@ function areaSummary(
   if (keys.has("fatmawati_pi")) labels.push("PI");
   if (keys.has("scbd_senopati")) labels.push("SCBD/Senopati");
   if (keys.has("alam_sutera")) labels.push("Alam Sutera");
+  if (keys.has("glodok")) labels.push("Glodok");
   return labels.length > 0 ? labels.join(" + ") : "run discovery";
 }
 
