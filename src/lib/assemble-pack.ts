@@ -3,7 +3,8 @@ import { candidatePhotoCredit, candidatePhotoSrc } from "./candidate-photo";
 import type { Candidate } from "./candidate-types";
 import { isoWeekParts } from "./iso-week";
 import { hoursHintFromSpec, openingHoursFromCandidate } from "./hours";
-import { googleMapsSearchUrl } from "./maps";
+import { googlePlaceMeta } from "./gmaps";
+import { googleMapsPlaceUrl } from "./maps";
 import { isPlayableTikTokUrl } from "./tiktok";
 import type { Combo, Stop, WeekendPack } from "./types";
 
@@ -21,6 +22,10 @@ const GENERIC_NAME =
 const CAFE_TYPES = new Set(["cafe", "bakery", "ice_cream"]);
 const FOOD_TYPES = new Set(["restaurant", "fast_food", "bar"]);
 const MALL_TYPES = new Set(["mall", "marketplace"]);
+const MEAL_TYPES = new Set(["restaurant", "fast_food", "marketplace"]);
+const DESSERT_TYPES = new Set(["ice_cream", "bakery"]);
+
+type StopKind = "meal" | "coffee" | "dessert" | "mall" | "other";
 
 type AreaRecipe = {
   key: string;
@@ -193,9 +198,38 @@ function roleFor(candidate: Candidate): string {
   return "stop";
 }
 
+function stopKind(candidate: Candidate): StopKind {
+  const types = candidate.place_types ?? [];
+  if (types.some((type) => DESSERT_TYPES.has(type))) return "dessert";
+  if (types.includes("cafe")) return "coffee";
+  if (types.some((type) => MEAL_TYPES.has(type))) return "meal";
+  if (types.some((type) => MALL_TYPES.has(type))) return "mall";
+  return "other";
+}
+
+function kindCap(prefer: AreaRecipe["prefer"], kind: StopKind): number {
+  if (prefer === "food") {
+    if (kind === "dessert" || kind === "coffee") return 1;
+    return Number.POSITIVE_INFINITY;
+  }
+  if (prefer === "cafe") {
+    if (kind === "dessert" || kind === "meal") return 1;
+    return Number.POSITIVE_INFINITY;
+  }
+  if (kind === "dessert") return 1;
+  if (kind === "coffee") return 2;
+  return Number.POSITIVE_INFINITY;
+}
+
 function score(candidate: Candidate, prefer: AreaRecipe["prefer"]): number {
   let value = 0;
   if (realTikTok(candidate)) value += 80;
+  const google = googlePlaceMeta(candidate);
+  if (google.google) value += 28;
+  if (google.rating != null) value += Math.max(0, google.rating - 3) * 10;
+  if (google.reviewCount != null && google.reviewCount > 0) {
+    value += Math.log10(google.reviewCount) * 10;
+  }
   if (photoFor(candidate)) value += 12;
   if (!isGenericChain(candidate.name)) value += 24;
   const kind = bucket(candidate);
@@ -229,6 +263,48 @@ function eligible(candidate: Candidate): boolean {
   return true;
 }
 
+function countKinds(picked: Candidate[]): Record<StopKind, number> {
+  const counts: Record<StopKind, number> = {
+    meal: 0,
+    coffee: 0,
+    dessert: 0,
+    mall: 0,
+    other: 0,
+  };
+  for (const candidate of picked) counts[stopKind(candidate)] += 1;
+  return counts;
+}
+
+function withinCaps(
+  picked: Candidate[],
+  prefer: AreaRecipe["prefer"],
+): boolean {
+  const counts = countKinds(picked);
+  return (Object.keys(counts) as StopKind[]).every(
+    (kind) => counts[kind] <= kindCap(prefer, kind),
+  );
+}
+
+function keepsBalance(
+  before: Candidate[],
+  after: Candidate[],
+  prefer: AreaRecipe["prefer"],
+): boolean {
+  if (!withinCaps(after, prefer)) return false;
+  const previous = countKinds(before);
+  const next = countKinds(after);
+  const minimums: Partial<Record<StopKind, number>> =
+    prefer === "food"
+      ? { meal: 2 }
+      : prefer === "cafe"
+        ? { coffee: 2 }
+        : { meal: 1 };
+  for (const [kind, minimum] of Object.entries(minimums) as Array<[StopKind, number]>) {
+    if (next[kind] < Math.min(minimum, previous[kind])) return false;
+  }
+  return true;
+}
+
 function pickMix(
   pool: Candidate[],
   prefer: AreaRecipe["prefer"],
@@ -237,55 +313,46 @@ function pickMix(
   const ranked = [...pool].sort((a, b) => score(b, prefer) - score(a, prefer));
   const picked: Candidate[] = [];
   const usedNames = new Set<string>();
-  const counts = { cafe: 0, food: 0, mall: 0, other: 0 };
 
-  const tryAdd = (candidate: Candidate) => {
+  const tryAdd = (candidate: Candidate, enforceCap: boolean) => {
     const key = candidate.name.trim().toLowerCase();
-    if (usedNames.has(key)) return false;
-    if (picked.length >= stopLimit) return false;
+    if (usedNames.has(key) || picked.length >= stopLimit) return false;
+    if (enforceCap && countKinds(picked)[stopKind(candidate)] >= kindCap(prefer, stopKind(candidate))) {
+      return false;
+    }
     usedNames.add(key);
     picked.push(candidate);
-    counts[bucket(candidate)] += 1;
     return true;
   };
 
-  const withTikTok = ranked.filter((item) => realTikTok(item));
-  const without = ranked.filter((item) => !realTikTok(item));
+  const minimums: Array<{ kind: StopKind; count: number }> =
+    prefer === "food"
+      ? [{ kind: "meal", count: 2 }]
+      : prefer === "cafe"
+        ? [{ kind: "coffee", count: 2 }]
+        : [{ kind: "meal", count: 1 }];
 
-  for (const candidate of withTikTok) {
-    if (picked.length >= stopLimit) break;
-    tryAdd(candidate);
-  }
-
-  if (picked.length < 3) {
-    for (const candidate of without) {
-      if (picked.length >= 3) break;
-      const kind = bucket(candidate);
-      if (prefer === "cafe" && kind === "food" && counts.cafe === 0) continue;
-      tryAdd(candidate);
-    }
-  }
-
-  if (picked.length < 3) {
+  for (const minimum of minimums) {
     for (const candidate of ranked) {
-      if (picked.length >= 3) break;
-      tryAdd(candidate);
+      if (countKinds(picked)[minimum.kind] >= minimum.count) break;
+      if (stopKind(candidate) !== minimum.kind) continue;
+      tryAdd(candidate, false);
     }
   }
 
-  if (prefer === "food" && counts.food === 0) {
-    const extra = ranked.find((item) => bucket(item) === "food" && !picked.includes(item));
-    if (extra && picked.length < stopLimit) tryAdd(extra);
-  }
-  if (prefer === "cafe" && counts.cafe === 0) {
-    const extra = ranked.find((item) => bucket(item) === "cafe" && !picked.includes(item));
-    if (extra && picked.length < stopLimit) tryAdd(extra);
+  for (const candidate of ranked) {
+    if (picked.length >= stopLimit) break;
+    tryAdd(candidate, true);
   }
 
-  return preferHours(picked.slice(0, stopLimit), ranked);
+  return preferHours(picked.slice(0, stopLimit), ranked, prefer);
 }
 
-function preferHours(picked: Candidate[], ranked: Candidate[]): Candidate[] {
+function preferHours(
+  picked: Candidate[],
+  ranked: Candidate[],
+  prefer: AreaRecipe["prefer"],
+): Candidate[] {
   const hasHours = (candidate: Candidate) =>
     Boolean(openingHoursFromCandidate(candidate));
   if (picked.filter(hasHours).length >= 2) return picked;
@@ -295,14 +362,21 @@ function preferHours(picked: Candidate[], ranked: Candidate[]): Candidate[] {
   const next = [...picked];
   for (const extra of extras) {
     if (next.filter(hasHours).length >= 2) break;
-    let swapAt = next.findIndex(
-      (candidate) => !hasHours(candidate) && !realTikTok(candidate),
-    );
-    if (swapAt < 0) {
-      swapAt = next.findIndex((candidate) => !hasHours(candidate));
-    }
-    if (swapAt < 0) break;
-    next[swapAt] = extra;
+    const indexes = next
+      .map((candidate, index) => ({ candidate, index }))
+      .filter((item) => !hasHours(item.candidate))
+      .sort(
+        (a, b) =>
+          Number(Boolean(realTikTok(a.candidate))) -
+          Number(Boolean(realTikTok(b.candidate))),
+      );
+    const swap = indexes.find((item) => {
+      const trial = [...next];
+      trial[item.index] = extra;
+      return keepsBalance(next, trial, prefer);
+    });
+    if (!swap) continue;
+    next[swap.index] = extra;
   }
   return next;
 }
@@ -334,7 +408,9 @@ function finiteWeekend(
 }
 
 function toStop(candidate: Candidate): Stop | null {
-  const maps = googleMapsSearchUrl({
+  const google = googlePlaceMeta(candidate);
+  const maps = googleMapsPlaceUrl({
+    placeUrl: google.placeUrl,
     name: candidate.name,
     area: candidate.area_label,
     lat: candidate.lat,
@@ -359,6 +435,9 @@ function toStop(candidate: Candidate): Stop | null {
     googleMapsUrl: maps,
     photoUrl,
     photoCredit: candidatePhotoCredit(candidate),
+    rating: google.rating,
+    reviewCount: google.reviewCount,
+    priceRange: google.priceRange,
     tiktokUrl,
     hoursHint: hoursSpec ? hoursHintFromSpec(hoursSpec) : null,
   };
@@ -469,10 +548,10 @@ export function assemblePackFromCandidates(candidates: Candidate[]): WeekendPack
     title: "Weekend Strolls",
     tagline: `This weekend · ${featured.length} strolls`,
     event: {
-      name: "Auto-published from OSM",
+      name: "Places from Google Maps + OpenStreetMap",
       endsOn: week.isoWeek,
       endsLabel: `${week.weekLabel} · no approve gate`,
-      note: "Geofabrik / HOT / Overpass · Mapillary stills",
+      note: "Places from Google Maps + OpenStreetMap",
       kind: "live",
     },
     askPlaceholder: "Ask for a stroll — coming later",

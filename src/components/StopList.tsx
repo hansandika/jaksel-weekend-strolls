@@ -1,3 +1,4 @@
+import { formatPlaceFacts } from "@/lib/gmaps";
 import { displayLabel } from "@/lib/labels";
 import type { Stop } from "@/lib/types";
 import { comboWalkTotal } from "@/lib/walk";
@@ -8,7 +9,9 @@ export function StopList({ stops }: { stops: Stop[] }) {
 
   return (
     <div>
-      {stops.map((stop, index) => (
+      {stops.map((stop, index) => {
+        const facts = formatPlaceFacts(stop);
+        return (
         <div key={`${stop.candidateId ?? stop.name}-${stop.role}`}>
           <article className="surface hover-lift overflow-hidden rounded-[16px] p-2.5 md:p-3.5">
             <div className="flex items-center gap-2.5 md:gap-3.5">
@@ -37,6 +40,9 @@ export function StopList({ stops }: { stops: Stop[] }) {
                   </span>
                 </div>
                 <p className="mt-0.5 text-[11px] text-cream/45">{stop.area}</p>
+                {facts ? (
+                  <p className="mt-1 text-[11px] font-medium text-cream/70">{facts}</p>
+                ) : null}
                 {stop.photoCredit ? (
                   <p className="mt-1 text-[10px] leading-snug text-cream/35">
                     {stop.photoCredit}
@@ -91,7 +97,8 @@ export function StopList({ stops }: { stops: Stop[] }) {
             </div>
           ) : null}
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

@@ -6,7 +6,7 @@ import type { QueueFilter } from "@/lib/candidate-types";
 
 export const dynamic = "force-dynamic";
 
-const FILTERS: QueueFilter[] = ["all", "cafe", "food", "mall", "out"];
+const FILTERS: QueueFilter[] = ["all", "cafe", "food", "mall", "out", "gmaps"];
 
 function isFilter(value: string | undefined): value is QueueFilter {
   return FILTERS.includes(value as QueueFilter);

@@ -1,3 +1,4 @@
+import { formatPlaceFacts } from "@/lib/gmaps";
 import type { Combo } from "@/lib/types";
 import { comboDayMath, comboWalkTotal, formatKm } from "@/lib/walk";
 import { MapsPin } from "./MapsPin";
@@ -48,6 +49,11 @@ export function StrollRoutePanel({
                   {stop.name}
                 </p>
                 <p className="mt-0.5 text-[11px] text-cream/45">{stop.area}</p>
+                {formatPlaceFacts(stop) ? (
+                  <p className="mt-0.5 text-[11px] font-medium text-cream/70">
+                    {formatPlaceFacts(stop)}
+                  </p>
+                ) : null}
                 {stop.hoursHint ? (
                   <p
                     className={`mt-1.5 inline-flex rounded-full px-2 py-[3px] text-[11px] font-medium ${

@@ -85,6 +85,9 @@ Deno.serve(async (req: Request) => {
         query = query.overlaps("place_types", ["mall", "marketplace"]);
       }
       if (filter === "out") query = query.contains("tags", ["out-of-jaksel"]);
+      if (filter === "gmaps" || filter === "google_maps") {
+        query = query.eq("source", "google_maps");
+      }
       if (q) query = query.ilike("name", `%${q}%`);
       if (missingPhotos) {
         query = query.is("photo_url", null);
@@ -350,8 +353,182 @@ Deno.serve(async (req: Request) => {
     return json({ skipped: false, looked, updated });
   }
 
+  if (body.action === "upsert_gmaps") {
+    const incoming = Array.isArray(body.rows) ? body.rows : [];
+    if (incoming.length === 0) return json({ error: "rows required" }, 400);
+    if (incoming.length > 40) return json({ error: "max 40 rows per request" }, 400);
+    let inserted = 0;
+    let updated = 0;
+    const rows: Array<Record<string, unknown>> = [];
+    try {
+      for (const row of incoming) {
+        const saved = await upsertGmapsRow(supabase, row as GmapsRow);
+        if (!saved) continue;
+        if (saved.created) inserted += 1;
+        else updated += 1;
+        rows.push({
+          id: saved.id,
+          gmaps_ftid: saved.gmaps_ftid,
+          photo_url: saved.photo_url,
+        });
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : JSON.stringify(error);
+      return json({ error: message }, 500);
+    }
+    return json({ inserted, updated, rows });
+  }
+
   return json({ error: "unknown action" }, 400);
 });
+
+type GmapsRow = {
+  name?: unknown;
+  area_label?: unknown;
+  area_key?: unknown;
+  lat?: unknown;
+  lng?: unknown;
+  gmaps_ftid?: unknown;
+  gmaps_place_url?: unknown;
+  gmaps_category?: unknown;
+  rating?: unknown;
+  review_count?: unknown;
+  price_range?: unknown;
+  place_types?: unknown;
+  tags?: unknown;
+  draft_why?: unknown;
+  draft_tip?: unknown;
+  tiktok_urls?: unknown;
+  photo_url?: unknown;
+  photo_urls?: unknown;
+  mapillary?: unknown;
+  raw?: unknown;
+};
+
+function textOrNull(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed || null;
+}
+
+function numberOrNull(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim()) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+}
+
+function stringList(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
+}
+
+async function upsertGmapsRow(
+  supabase: ReturnType<typeof serviceClient>,
+  row: GmapsRow,
+): Promise<{ id: string; gmaps_ftid: string; photo_url: string | null; created: boolean } | null> {
+  const name = textOrNull(row.name);
+  const ftid = textOrNull(row.gmaps_ftid)?.replace(/^gmaps\//, "") ?? "";
+  const lat = numberOrNull(row.lat);
+  const lng = numberOrNull(row.lng);
+  if (!name || name.length < 2 || !ftid || lat == null || lng == null) return null;
+  const sourceId = `gmaps/${ftid}`;
+  const existingSelect =
+    "id, draft_why, draft_tip, tiktok_urls, photo_url, photo_urls, mapillary, raw, status";
+  const byFtid = await supabase
+    .from("candidates")
+    .select(existingSelect)
+    .eq("gmaps_ftid", ftid)
+    .maybeSingle();
+  if (byFtid.error) throw new Error(byFtid.error.message);
+  let existing = byFtid.data;
+  if (!existing) {
+    const bySource = await supabase
+      .from("candidates")
+      .select(existingSelect)
+      .eq("source", "google_maps")
+      .eq("source_id", sourceId)
+      .maybeSingle();
+    if (bySource.error) throw new Error(bySource.error.message);
+    existing = bySource.data;
+  }
+
+  const incomingWhy = textOrNull(row.draft_why);
+  const incomingTip = textOrNull(row.draft_tip);
+  const incomingTikToks = stringList(row.tiktok_urls);
+  const incomingPhoto = textOrNull(row.photo_url);
+  const existingRaw = existing?.raw && typeof existing.raw === "object"
+    ? existing.raw as Record<string, unknown>
+    : {};
+  const incomingRaw = row.raw && typeof row.raw === "object"
+    ? row.raw as Record<string, unknown>
+    : {};
+  const patch = {
+    name,
+    area_label: textOrNull(row.area_label),
+    area_key: textOrNull(row.area_key),
+    source: "google_maps",
+    source_id: sourceId,
+    lat,
+    lng,
+    gmaps_ftid: ftid,
+    gmaps_place_url: textOrNull(row.gmaps_place_url),
+    gmaps_category: textOrNull(row.gmaps_category),
+    rating: numberOrNull(row.rating),
+    review_count: numberOrNull(row.review_count) == null
+      ? null
+      : Math.round(numberOrNull(row.review_count) as number),
+    price_range: textOrNull(row.price_range),
+    place_types: stringList(row.place_types),
+    tags: stringList(row.tags),
+    draft_why: textOrNull(existing?.draft_why) ?? incomingWhy,
+    draft_tip: textOrNull(existing?.draft_tip) ?? incomingTip,
+    tiktok_urls: incomingTikToks.length > 0
+      ? incomingTikToks
+      : stringList(existing?.tiktok_urls),
+    photo_url: textOrNull(existing?.photo_url) ?? incomingPhoto,
+    photo_urls: stringList(existing?.photo_urls).length > 0
+      ? stringList(existing?.photo_urls)
+      : stringList(row.photo_urls),
+    mapillary: existing?.mapillary && Object.keys(existing.mapillary as object).length > 0
+      ? existing.mapillary
+      : row.mapillary && typeof row.mapillary === "object"
+      ? row.mapillary
+      : {},
+    raw: { ...existingRaw, ...incomingRaw },
+  };
+
+  if (existing?.id) {
+    const { data, error } = await supabase
+      .from("candidates")
+      .update(patch)
+      .eq("id", existing.id)
+      .select("id, gmaps_ftid, photo_url")
+      .single();
+    if (error) throw new Error(error.message);
+    return {
+      id: data.id,
+      gmaps_ftid: data.gmaps_ftid,
+      photo_url: data.photo_url,
+      created: false,
+    };
+  }
+
+  const { data, error } = await supabase
+    .from("candidates")
+    .insert({ ...patch, status: "new", tiktok_candidates: [], osm_type: null })
+    .select("id, gmaps_ftid, photo_url")
+    .single();
+  if (error) throw new Error(error.message);
+  return {
+    id: data.id,
+    gmaps_ftid: data.gmaps_ftid,
+    photo_url: data.photo_url,
+    created: true,
+  };
+}
 
 type MapillaryPhoto = {
   image_id: string;
